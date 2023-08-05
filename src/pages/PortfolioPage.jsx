@@ -113,13 +113,6 @@ function PortfolioPage() {
                 price="$1,845.23"
                 value="$5.64"
               />
-              <Row
-                img="/images/tokens/bnb-circle.svg"
-                tokenName="BNB"
-                balance="<0.01"
-                price="$1,845.23"
-                value="$5.64"
-              />
             </tbody>
           </table>
         </div>
