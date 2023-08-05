@@ -3,7 +3,7 @@ import StakingBox from "components/StakingBox";
 
 function DeelanceStakingPage() {
   return (
-    <div className="sm:min-h-[calc(100vh-var(--navbar-height))] flex flex-col items-center justify-start sm:justify-center sm:py-10 relative z-10">
+    <div className="sm:min-h-[calc(100vh-var(--navbar-height))] flex flex-col items-center justify-start sm:py-16 relative z-10">
       <div className="sm:max-w-[472px] w-full bg-main-bg">
         <StakingBox />
       </div>

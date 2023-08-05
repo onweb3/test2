@@ -1,11 +1,12 @@
 import { useState } from "react";
 import Stake from "./Stake";
 import UnStake from "./UnStake";
-import Button from "./Button";
+import { ConnectButton } from "./ConnectButton";
+import { useAccount } from "wagmi";
 
 function StakingBox() {
   const [tab, setTab] = useState("stake");
-  const [isConnected, setConnected] = useState(false);
+  const { isConnected } = useAccount();
 
   return (
     <div className="bg-feature-card-border p-2 rounded-lg shadow-[0_0_1rem_rgba(0,0,0,1)]">
@@ -50,18 +51,9 @@ function StakingBox() {
               {tab === "unstake" ? <UnStake /> : null}
             </>
           ) : null}
-
-          {!isConnected ? (
-            <div className="text-[80%] xl:text-[90%] mt-8">
-              <Button
-                onClick={() => setConnected(true)}
-                variant={2}
-                className="w-full shadow-2xl"
-              >
-                Connect Wallet
-              </Button>
-            </div>
-          ) : null}
+          <div className="text-[80%] xl:text-[90%] mt-8">
+            <ConnectButton />
+          </div>
         </main>
       </div>
     </div>
