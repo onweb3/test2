@@ -1,6 +1,11 @@
+import { useState } from "react";
 import Button from "./Button";
 import StakeInputBox from "./StakeInputBox";
 import { TbReload } from "react-icons/tb";
+import { useAccount, useContractRead, useContractWrite } from "wagmi";
+import { TOKEN_CONTRACT_ADDRESS_ETH } from "GlobalValues";
+import { CONTRACT_ADDRESS_FLEXIBLE_STAKING } from "FluidStakingContract";
+import { TOKEN_CONTRACT_ADDRESS_ETH as TOKEN_CONTRACT_ADDRESS } from "GlobalValues";
 
 const StakeCard = ({ title, heading }) => {
   return (
@@ -11,14 +16,86 @@ const StakeCard = ({ title, heading }) => {
   );
 };
 
-function Stake({ isConnected }) {
+function Stake({ dlanceBal }) {
+  /**
+   * START - common allowance
+   * Common allowance ABI of DLANCE contract address for staking
+   */
+  const ABI_allowance = [
+    {
+      inputs: [
+        { internalType: "address", name: "owner", type: "address" },
+        { internalType: "address", name: "spender", type: "address" },
+      ],
+      name: "allowance",
+      outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+      stateMutability: "view",
+      type: "function",
+    },
+  ];
+  /**
+   * END - common allowance
+   */
+  /**
+   * Start - check allowance for flexible staking
+   */
+  const { isConnected, address: userAddress } = useAccount();
+
+  const [flexibleAllowance, setFlexibleAllowance] = useState(false);
+  const { refetch: fStaking_refetch } = useContractRead({
+    address: TOKEN_CONTRACT_ADDRESS_ETH,
+    abi: ABI_allowance,
+    functionName: "allowance",
+    chainId: 1,
+    enabled: isConnected ? true : false,
+    args: [userAddress, CONTRACT_ADDRESS_FLEXIBLE_STAKING],
+    onSuccess(data) {
+      !isNaN(Number(data)) && setFlexibleAllowance(Number(data) !== 0);
+    },
+  });
+
+  /**
+   * END - check allowance for locked staking
+   */
+  // /**
+  //  * START - enable staking - allowance
+  //  */
+  // const ABI_approve = [
+  //   {
+  //     inputs: [
+  //       { internalType: "address", name: "spender", type: "address" },
+  //       { internalType: "uint256", name: "amount", type: "uint256" },
+  //     ],
+  //     name: "approve",
+  //     outputs: [{ internalType: "bool", name: "", type: "bool" }],
+  //     stateMutability: "nonpayable",
+  //     type: "function",
+  //   },
+  // ];
+
+  // const { isLoading: enableStaking_isLoading, write: enableStaking } =
+  //   useContractWrite({
+  //     address: TOKEN_CONTRACT_ADDRESS,
+  //     abi: ABI_approve,
+  //     functionName: "approve",
+  //     args: [
+  //       CONTRACT_ADDRESS_FLEXIBLE_STAKING,
+  //       "10000000000000000000000000000",
+  //     ],
+  //   });
+
+  // /**
+  //  * END - enable staking - allowance
+  //  */
   return (
     <div>
       {/* <p className="text-center mb-5">Balance: 0.000 DLANCE</p> */}
 
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs sm:text-sm opacity-80">Amount</p>
-        <p className="text-xs sm:text-sm opacity-80">My Balance: 0.00 DLANCE</p>
+        <p className="text-xs sm:text-sm opacity-80">
+          My Balance: {dlanceBal} DLANCE
+        </p>
       </div>
 
       <div>
@@ -30,9 +107,20 @@ function Stake({ isConnected }) {
       {isConnected ? (
         <>
           <div className="text-[80%] xl:text-[90%] mt-6 mb-10">
-            <Button variant={0} className="w-full">
-              STAKE $DLANCE
-            </Button>
+            {flexibleAllowance ? (
+              <Button variant={0} className="w-full">
+                STAKE $DLANCE
+              </Button>
+            ) : (
+              <Button
+                variant={0}
+                className="w-full"
+                // onClick={() => enableStaking()}
+                // disabled={enableStaking_isLoading}
+              >
+                ENABLE ALLOWNACE
+              </Button>
+            )}
           </div>
 
           <div>
