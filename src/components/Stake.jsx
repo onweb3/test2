@@ -1,9 +1,15 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Button from "./Button";
 import StakeInputBox from "./StakeInputBox";
 import { TbReload } from "react-icons/tb";
-import { useAccount, useContractRead, useContractWrite } from "wagmi";
-import { TOKEN_CONTRACT_ADDRESS_ETH } from "GlobalValues";
+import {
+  useAccount,
+  useContractRead,
+  useContractWrite,
+  useNetwork,
+  usePublicClient,
+} from "wagmi";
+import { DLANCE_ABI_allowance, TOKEN_CONTRACT_ADDRESS_ETH } from "GlobalValues";
 import { CONTRACT_ADDRESS_FLEXIBLE_STAKING } from "FluidStakingContract";
 import { TOKEN_CONTRACT_ADDRESS_ETH as TOKEN_CONTRACT_ADDRESS } from "GlobalValues";
 
@@ -18,38 +24,22 @@ const StakeCard = ({ title, heading }) => {
 
 function Stake({ dlanceBal }) {
   /**
-   * START - common allowance
-   * Common allowance ABI of DLANCE contract address for staking
-   */
-  const ABI_allowance = [
-    {
-      inputs: [
-        { internalType: "address", name: "owner", type: "address" },
-        { internalType: "address", name: "spender", type: "address" },
-      ],
-      name: "allowance",
-      outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-      stateMutability: "view",
-      type: "function",
-    },
-  ];
-  /**
-   * END - common allowance
-   */
-  /**
    * Start - check allowance for flexible staking
    */
   const { isConnected, address: userAddress } = useAccount();
+  const { chain } = useNetwork();
+  const publicClient = usePublicClient({ chainId: chain?.id });
 
   const [flexibleAllowance, setFlexibleAllowance] = useState(false);
   const { refetch: fStaking_refetch } = useContractRead({
     address: TOKEN_CONTRACT_ADDRESS_ETH,
-    abi: ABI_allowance,
+    abi: DLANCE_ABI_allowance,
     functionName: "allowance",
-    chainId: 1,
+    chainId: chain?.id,
     enabled: isConnected ? true : false,
     args: [userAddress, CONTRACT_ADDRESS_FLEXIBLE_STAKING],
     onSuccess(data) {
+      console.log(`${Number(data) === 0 ? "❌" : "✅"} allowance : ${data}`);
       !isNaN(Number(data)) && setFlexibleAllowance(Number(data) !== 0);
     },
   });
@@ -57,36 +47,84 @@ function Stake({ dlanceBal }) {
   /**
    * END - check allowance for locked staking
    */
-  // /**
-  //  * START - enable staking - allowance
-  //  */
-  // const ABI_approve = [
-  //   {
-  //     inputs: [
-  //       { internalType: "address", name: "spender", type: "address" },
-  //       { internalType: "uint256", name: "amount", type: "uint256" },
-  //     ],
-  //     name: "approve",
-  //     outputs: [{ internalType: "bool", name: "", type: "bool" }],
-  //     stateMutability: "nonpayable",
-  //     type: "function",
-  //   },
-  // ];
+  const handleTxWaiting = useCallback(
+    (txHash, contractfnName = "approve") => {
+      console.log(txHash);
+      let infoMsg = "";
+      let successMsg = "";
 
-  // const { isLoading: enableStaking_isLoading, write: enableStaking } =
-  //   useContractWrite({
-  //     address: TOKEN_CONTRACT_ADDRESS,
-  //     abi: ABI_approve,
-  //     functionName: "approve",
-  //     args: [
-  //       CONTRACT_ADDRESS_FLEXIBLE_STAKING,
-  //       "10000000000000000000000000000",
-  //     ],
-  //   });
+      if (contractfnName === "approve") {
+        infoMsg = `Ready to start staking`;
+        successMsg = `Allowance Approved`;
+      }
 
-  // /**
-  //  * END - enable staking - allowance
-  //  */
+      // info-toast : txHash is in the pool - waiting for tx
+      // TxToast(coin, txHash, infoMsg, "info");
+      publicClient
+        .waitForTransactionReceipt({
+          hash: txHash,
+          confirmations: 2,
+        })
+        .then((data) => {
+          console.log(`waited for tx`);
+          console.log(data);
+
+          // success-toast : txHash is successful
+          // toast.dismiss();
+          // TxToast(coin, txHash, successMsg, "success", 3000);
+          console.log(`✅-log: ${contractfnName}-TxSuccessful`);
+          if (contractfnName === "approve") {
+            setFlexibleAllowance(true);
+          }
+        })
+        .catch((err) => {
+          setFlexibleAllowance(false);
+          console.log(`ERROR waited for tx - type : ${contractfnName}`);
+          console.log(err);
+          // TxToast(coin, txHash, "Transaction Failed", "error");
+        });
+      // .finally(() => {
+      //   inSaleUSDvalue_refetch();
+      //   userDeposits_refetch();
+      // });
+    },
+    [publicClient]
+  );
+  /**
+   * START - enable staking - allowance
+   */
+  const ABI_approve = [
+    {
+      inputs: [
+        { internalType: "address", name: "spender", type: "address" },
+        { internalType: "uint256", name: "amount", type: "uint256" },
+      ],
+      name: "approve",
+      outputs: [{ internalType: "bool", name: "", type: "bool" }],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+  ];
+
+  const { isLoading: enableStaking_isLoading, write: enableStaking } =
+    useContractWrite({
+      address: TOKEN_CONTRACT_ADDRESS,
+      abi: ABI_approve,
+      functionName: "approve",
+      args: [
+        CONTRACT_ADDRESS_FLEXIBLE_STAKING,
+        "10000000000000000000000000000",
+      ],
+      onSuccess(data) {
+        console.log(data);
+        console.log(`✅ success : "approve"\n${data.hash}`);
+        handleTxWaiting(data.hash, "approve");
+      },
+    });
+
+  /**
+   * END - enable staking - allowance
+   */
   return (
     <div>
       {/* <p className="text-center mb-5">Balance: 0.000 DLANCE</p> */}
@@ -115,8 +153,8 @@ function Stake({ dlanceBal }) {
               <Button
                 variant={0}
                 className="w-full"
-                // onClick={() => enableStaking()}
-                // disabled={enableStaking_isLoading}
+                onClick={() => enableStaking()}
+                disabled={enableStaking_isLoading}
               >
                 ENABLE ALLOWNACE
               </Button>

@@ -2,13 +2,14 @@ import { useState } from "react";
 import Stake from "./Stake";
 import UnStake from "./UnStake";
 import { ConnectButton } from "./ConnectButton";
-import { useAccount, useBalance } from "wagmi";
+import { useAccount, useBalance, useNetwork } from "wagmi";
 import { TOKEN_CONTRACT_ADDRESS_ETH as TOKEN_CONTRACT_ADDRESS } from "../GlobalValues";
 import { APY_FLUID_STAKING } from "FluidStakingContract";
 
 function StakingBox() {
   const [tab, setTab] = useState("stake");
   const { address, isConnected } = useAccount();
+  const { chain } = useNetwork();
 
   /**
    * START - get Deelance Balance
@@ -18,6 +19,7 @@ function StakingBox() {
     address,
     enabled: address ? true : false,
     token: TOKEN_CONTRACT_ADDRESS,
+    chainId: chain?.id,
     onSuccess(balData) {
       let bal = Number(balData.formatted).toFixed(2) + "";
       // console.log(` ✅ UserBalance - bal : ${bal}`);
