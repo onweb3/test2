@@ -2,11 +2,39 @@ import { useState } from "react";
 import Stake from "./Stake";
 import UnStake from "./UnStake";
 import { ConnectButton } from "./ConnectButton";
-import { useAccount } from "wagmi";
+import { useAccount, useBalance, useNetwork } from "wagmi";
+import { TOKEN_CONTRACT_ADDRESS_ETH as TOKEN_CONTRACT_ADDRESS } from "../GlobalValues";
+import { APY_FLUID_STAKING } from "FluidStakingContract";
 
 function StakingBox() {
   const [tab, setTab] = useState("stake");
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
+  const { chain } = useNetwork();
+
+  /**
+   * START - get Deelance Balance
+   */
+  const [stakeTokenBalance, setStakeTokenBalance] = useState("0");
+  const { data: balData } = useBalance({
+    address,
+    enabled: address ? true : false,
+    token: TOKEN_CONTRACT_ADDRESS,
+    chainId: chain?.id,
+    onSuccess(balData) {
+      let bal = Number(balData.formatted).toFixed(2) + "";
+      // console.log(` ✅ UserBalance - bal : ${bal}`);
+      // console.log(balData);
+      setStakeTokenBalance(Number(bal).toLocaleString());
+    },
+    onError(err) {
+      stakeTokenBalance("0");
+      console.error(err);
+      console.error(`❌ caught - error in fetching balance`);
+    },
+  });
+  /**
+   * END - get Deelance Balance
+   */
 
   return (
     <div className="bg-feature-card-border p-2 rounded-lg shadow-[0_0_1rem_rgba(0,0,0,1)]">
@@ -18,7 +46,9 @@ function StakingBox() {
           <p className="text-center font-medium mb-2 text-sm">
             Total $DLANCE in Fluid Staking 476,852,255.89
           </p>
-          <p className="text-center font-bold text-sm xl:text-base">APY: 15%</p>
+          <p className="text-center font-bold text-sm xl:text-base">
+            APY: {APY_FLUID_STAKING}%
+          </p>
         </header>
 
         <div className="mx-auto rounded-full border-1 border-main-green p-1 mb-8 w-[90%] sm:w-[60%] grid grid-cols-2">
@@ -47,8 +77,10 @@ function StakingBox() {
         <main className="px-6 sm:px-10">
           {isConnected ? (
             <>
-              {tab === "stake" ? <Stake isConnected={isConnected} /> : null}
-              {tab === "unstake" ? <UnStake /> : null}
+              {tab === "stake" ? <Stake dlanceBal={stakeTokenBalance} /> : null}
+              {tab === "unstake" ? (
+                <UnStake dlanceBal={stakeTokenBalance} />
+              ) : null}
             </>
           ) : null}
           <div className="text-[80%] xl:text-[90%] mt-8">
