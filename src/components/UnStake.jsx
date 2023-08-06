@@ -1,12 +1,14 @@
 import Button from "./Button";
 import StakeInputBox from "./StakeInputBox";
 
-function UnStake() {
+function UnStake({ userStakedTokens = "0" }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
         <p className="text-sm opacity-80">Amount</p>
-        <p className="text-sm opacity-80">Staked DLANCE: 0.00</p>
+        <p className="text-sm opacity-80">
+          Staked DLANCE: {Number(userStakedTokens).toLocaleString()}
+        </p>
       </div>
 
       <div>

@@ -2,15 +2,11 @@ import { LiaHandHoldingUsdSolid } from "react-icons/lia";
 import Button from "./Button";
 import { Link } from "react-router-dom";
 import { BiWallet } from "react-icons/bi";
-import { useAccount } from "wagmi";
 
 function Navbar() {
-  const { isConnected } = useAccount();
   return (
     <nav
-      className={`grid grid-cols-[auto_auto] sm:grid-cols-[${
-        isConnected ? "auto_1fr_auto" : "auto_auto"
-      }] items-center gap-6 px-6 sm:px-10 bg-greyDark py-5 sm:py-0 sm:h-navbar-height justify-between z-[200] justify-items-end`}
+      className={`grid grid-cols-[auto_auto] sm:grid-cols-[auto_1fr_auto] items-center gap-6 px-6 sm:px-10 bg-greyDark py-5 sm:py-0 sm:h-navbar-height justify-between z-[200] justify-items-end`}
     >
       <Link to="/">
         <img
@@ -23,9 +19,7 @@ function Navbar() {
       {/* <div className="hidden sm:block"></div> */}
 
       <div
-        className={`row-start-2 sm:row-start-auto col-span-2 sm:col-span-1 ${
-          isConnected ? "flex " : "hidden"
-        } space-x-4 text-[67%] sm:text-[80%] xl:text-[100%]`}
+        className={`row-start-2 sm:row-start-auto col-span-2 sm:col-span-1 flex space-x-4 text-[67%] sm:text-[80%] xl:text-[100%]`}
       >
         <Button
           to=""
