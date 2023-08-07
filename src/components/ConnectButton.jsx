@@ -16,10 +16,10 @@ export function ConnectButton() {
   const { chain } = getNetwork();
 
   const openWalletConnectModal = useCallback(() => {
-    // setDefaultChain(mainnet); //@todo - uncomment this for prod
+    setDefaultChain(mainnet);
     if (isOpen) return;
     open();
-  }, [isOpen, open]);
+  }, [isOpen, open, setDefaultChain]);
 
   const [currentChainIcon, setCurrentChainIcon] =
     useState(chainIconUnsupported);
