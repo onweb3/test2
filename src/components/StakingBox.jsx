@@ -242,9 +242,6 @@ function StakingBox() {
    * END : handle waiting for txs
    */
 
-  console.log("totalStaked");
-  console.log(totalStaked);
-
   return (
     <div className="bg-feature-card-border p-2 rounded-lg shadow-[0_0_1rem_rgba(0,0,0,1)] ">
       <div className="border-2 border-main-green-shade-40 rounded-xl pt-6 pb-10 bg-green-radial transition-all duration-300">
