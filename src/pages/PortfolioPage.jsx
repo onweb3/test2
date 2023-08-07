@@ -303,6 +303,95 @@ function PortfolioPage() {
    */
 
   /**
+   * START - 553
+   */
+  const { refetch: timeLeft_refetch } = useContractRead({
+    address: CONTRACT_ADDRESS_FLEXIBLE_STAKING,
+    abi: FLEXIBLE_STAKING_ABI,
+    functionName: "compoundRewardsTimer",
+    enabled: false,
+    chainId: chain?.id,
+    args: [address],
+    onSuccess(data) {
+      function convertHMS(value) {
+        const sec = parseInt(value, 10); // convert value to number if it's string
+        let hours = Math.floor(sec / 3600); // get hours
+        let minutes = Math.floor((sec - hours * 3600) / 60); // get minutes
+        let seconds = sec - hours * 3600 - minutes * 60; //  get seconds
+        // add 0 if value < 10; Example: 2 => 02
+        if (hours < 10) {
+          hours = "0" + hours;
+        }
+        if (minutes < 10) {
+          minutes = "0" + minutes;
+        }
+        if (seconds < 10) {
+          seconds = "0" + seconds;
+        }
+
+        if (Number(hours) === 0 && Number(minutes) === 0) {
+          toast.warn(`Time left until restaking : ${seconds} seconds!`, {
+            position: "bottom-center",
+            autoClose: 1500,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+            type: "info",
+            style: {
+              maxWidth: "92vw",
+            },
+          });
+        } else if (Number(hours) === 0 && Number(minutes) > 0) {
+          toast.warn(
+            `Time left until restaking : ${minutes} min : ${seconds} seconds!!`,
+            {
+              position: "bottom-center",
+              autoClose: 1500,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "dark",
+              type: "info",
+              style: {
+                maxWidth: "92vw",
+              },
+            }
+          );
+        } else {
+          toast.warn(
+            `Time left until restaking : ${hours} hr :${minutes} min!!!`,
+            {
+              position: "bottom-center",
+              autoClose: 1500,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "dark",
+              type: "info",
+              style: {
+                maxWidth: "92vw",
+              },
+            }
+          );
+        }
+        const timeLeft = { hr: hours, min: minutes, sec: seconds };
+        return timeLeft;
+      }
+      convertHMS(data);
+    },
+  });
+  /**
+   * END - 553
+   */
+
+  /**
    * START : "stakeRewards"
    */
   const { status: stakeRewards_status, write: stakeRewards } = useContractWrite(
@@ -317,7 +406,7 @@ function PortfolioPage() {
       },
       onError(data) {
         // timeLeftForStakingRewards();
-        // timeLeft_refetch();
+        timeLeft_refetch();
         console.error(data);
         console.error(`dev-stakeRewards caught`);
       },
