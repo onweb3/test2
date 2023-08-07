@@ -23,6 +23,7 @@ import {
 } from "FluidStakingContract";
 import { toast } from "react-toastify";
 import { formatEther, formatUnits } from "viem";
+import { FaExternalLinkAlt } from "react-icons/fa";
 
 function StakingBox() {
   const [tab, setTab] = useState("stake");
@@ -310,9 +311,19 @@ function StakingBox() {
               ) : null}
             </>
           ) : null}
+
           <div className="text-[80%] xl:text-[90%] mt-8">
             <ConnectButton />
           </div>
+
+          {/* <a
+            href="/"
+            target="_blank"
+            className="text-main-green w-fit block mx-auto mt-5 underline"
+          >
+            How to Stake{" "}
+            <FaExternalLinkAlt className="inline-block align-middle" />{" "}
+          </a> */}
         </main>
       </div>
     </div>
