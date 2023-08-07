@@ -135,7 +135,7 @@ function PortfolioPage() {
       abi: FLEXIBLE_STAKING_ABI,
       functionName: "getDepositInfo",
       chainId: chain?.id,
-      enabled: isConnected ? true : false,
+      enabled: address ? true : false,
       args: [address],
     });
   useEffect(() => {

@@ -65,7 +65,7 @@ function StakingBox() {
     abi: FLEXIBLE_STAKING_ABI,
     functionName: "getDepositInfo",
     chainId: chain?.id,
-    enabled: isConnected ? true : false,
+    enabled: address ? true : false,
     args: [address],
     onSuccess(data) {
       console.log(`🏦getDepositInfo()`);
@@ -135,7 +135,7 @@ function StakingBox() {
     abi: DLANCE_ABI_allowance,
     functionName: "allowance",
     chainId: chain?.id,
-    enabled: isConnected ? true : false,
+    enabled: address ? true : false,
     args: [address, CONTRACT_ADDRESS_FLEXIBLE_STAKING],
     onSuccess(data) {
       console.log(
