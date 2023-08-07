@@ -8,13 +8,7 @@ import {
   useContractWrite,
   useNetwork,
 } from "wagmi";
-import {
-  DLANCE_ABI_allowance,
-  DLANCE_ABI_approve,
-  TOKEN_CONTRACT_ADDRESS_ETH,
-  TOKEN_DECIMALS,
-  TOKEN_SYMBOL,
-} from "GlobalValues";
+import { DLANCE_ABI_approve, TOKEN_DECIMALS, TOKEN_SYMBOL } from "GlobalValues";
 import {
   CONTRACT_ADDRESS_FLEXIBLE_STAKING,
   FLEXIBLE_STAKING_ABI,
@@ -36,7 +30,6 @@ const StakeCard = ({ title, heading }) => {
 function Stake({
   dlanceBal,
   flexibleAllowance,
-  setFlexibleAllowance,
   handleTxWaiting,
   userRewards,
   userStakedTokens,
@@ -50,30 +43,8 @@ function Stake({
     setFormattedTokenBal(Number(bal).toLocaleString());
   }, [dlanceBal]);
 
-  /**
-   * Start - check allowance for staking
-   */
   const { isConnected, address: userAddress } = useAccount();
   const { chain } = useNetwork();
-
-  // eslint-disable-next-line no-unused-vars
-  const { refetch: fStaking_refetch } = useContractRead({
-    address: TOKEN_CONTRACT_ADDRESS_ETH,
-    abi: DLANCE_ABI_allowance,
-    functionName: "allowance",
-    chainId: chain?.id,
-    enabled: isConnected ? true : false,
-    args: [userAddress, CONTRACT_ADDRESS_FLEXIBLE_STAKING],
-    onSuccess(data) {
-      console.log(`${Number(data) === 0 ? "❌" : "✅"} allowance : ${data}`);
-      !isNaN(Number(data)) && setFlexibleAllowance(Number(data) !== 0);
-    },
-  });
-
-  /**
-   * END - check allowance for staking
-   */
-
   /**
    * START - enable staking - allowance
    */
@@ -344,14 +315,19 @@ function Stake({
 
       <div>
         <StakeInputBox setValue={setStakeAmount} value={stakeAmount} />
-        <p className="text-xs sm:text-sm mt-3 font-light">
-          Min Stake Amount: {MIN_STAKE_AMOUNT} DLANCE
-        </p>
+        <div className="flex justify-between">
+          <p className="text-xs mt-3 font-light">
+            Min Stake Amount: {MIN_STAKE_AMOUNT} DLANCE
+          </p>
+          <p className="text-xs mt-3 font-light">
+            Allowance left: {Number(flexibleAllowance).toLocaleString()}
+          </p>
+        </div>
       </div>
       {isConnected ? (
         <>
           <div className="text-[80%] xl:text-[90%] mt-6 mb-10">
-            {flexibleAllowance ? (
+            {Number(flexibleAllowance) >= Number(stakeAmount) ? (
               <Button
                 variant={0}
                 className="w-full"
@@ -382,7 +358,7 @@ function Stake({
                 onClick={() => approveAllowance()}
                 disabled={enableStaking_isLoading}
               >
-                ENABLE ALLOWNACE
+                ADD ALLOWNACE
               </Button>
             )}
           </div>

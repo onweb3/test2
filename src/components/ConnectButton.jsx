@@ -75,5 +75,7 @@ export function ConnectButton() {
 }
 
 /**
- * @todo - there's a scenario where TOKENS_IN_WALLET > ALLOWANCE FOR STAKING, in which scenario it'll show as - you can stake coz allowance>0, but users won't be able to stake coz NOT_ENOUGH_ALLOWANCE
+ * DONE >>> there's a scenario where TOKENS_IN_WALLET > ALLOWANCE FOR STAKING,
+ * >>>>>>>>>>>>>>>> in which scenario it'll show as - you can stake coz allowance>0,
+ * >>>>>>>>>>>>>>>> but users won't be able to stake coz NOT_ENOUGH_ALLOWANCE
  */

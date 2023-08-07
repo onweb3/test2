@@ -11,7 +11,9 @@ import {
 } from "wagmi";
 import {
   BLOCK_SCANLINK,
+  DLANCE_ABI_allowance,
   TOKEN_CONTRACT_ADDRESS_ETH as TOKEN_CONTRACT_ADDRESS,
+  TOKEN_CONTRACT_ADDRESS_ETH,
   TOKEN_DECIMALS,
 } from "../GlobalValues";
 import {
@@ -124,7 +126,35 @@ function StakingBox() {
   /**
    * END : generic tx toasts
    */
-  const [flexibleAllowance, setFlexibleAllowance] = useState(false);
+  const [flexibleAllowance, setFlexibleAllowance] = useState(0);
+  /**
+   * Start - check allowance for staking
+   */
+  const { refetch: fStaking_refetch } = useContractRead({
+    address: TOKEN_CONTRACT_ADDRESS_ETH,
+    abi: DLANCE_ABI_allowance,
+    functionName: "allowance",
+    chainId: chain?.id,
+    enabled: isConnected ? true : false,
+    args: [address, CONTRACT_ADDRESS_FLEXIBLE_STAKING],
+    onSuccess(data) {
+      console.log(
+        `${Number(data) === 0 ? "❌" : "✅"} allowance : ${formatUnits(
+          `${data}`,
+          TOKEN_DECIMALS
+        )} (converted)`
+      );
+      if (!isNaN(Number(data))) {
+        let t_allowance = Number(formatUnits(`${data}`, TOKEN_DECIMALS));
+        setFlexibleAllowance(t_allowance);
+      }
+      // !isNaN(Number(data)) && setFlexibleAllowance(Number(data) !== 0);
+    },
+  });
+
+  /**
+   * END - check allowance for staking
+   */
 
   /**
    * START : handle waiting for txs
@@ -159,7 +189,6 @@ function StakingBox() {
         .then((data) => {
           if (contractfnName === "approve") {
             title = `Ready to start staking`;
-            setFlexibleAllowance(true);
           } else if (contractfnName === "stake") {
             title = `Successfully Staked`;
           } else if (contractfnName === "unstake") {
@@ -179,7 +208,6 @@ function StakingBox() {
           console.log(`✅-log: ${contractfnName}-TxSuccessful`);
         })
         .catch((err) => {
-          setFlexibleAllowance(false);
           console.log(`ERROR waited for tx - type : ${contractfnName}`);
           console.log(err);
           title = "Tx. Failed";
@@ -189,9 +217,15 @@ function StakingBox() {
         .finally(() => {
           refetchTokenBalance();
           getDepositInfo_refetch();
+          fStaking_refetch();
         });
     },
-    [publicClient, getDepositInfo_refetch, refetchTokenBalance]
+    [
+      publicClient,
+      getDepositInfo_refetch,
+      refetchTokenBalance,
+      fStaking_refetch,
+    ]
   );
   /**
    * END : handle waiting for txs
@@ -242,7 +276,6 @@ function StakingBox() {
                 <Stake
                   dlanceBal={stakeTokenBalance}
                   flexibleAllowance={flexibleAllowance}
-                  setFlexibleAllowance={setFlexibleAllowance}
                   handleTxWaiting={handleTxWaiting}
                   userRewards={userRewards}
                   userStakedTokens={userStakedTokens}
