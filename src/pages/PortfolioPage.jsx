@@ -4,6 +4,8 @@ import {
 } from "FluidStakingContract";
 import {
   BLOCK_SCANLINK,
+  DLANCE_ABI_getETHLatestPrice,
+  NATIVE_TOKEN_PRICE_CONTRACT,
   TOKEN_CONTRACT_ADDRESS_ETH as TOKEN_CONTRACT_ADDRESS,
   TOKEN_DECIMALS,
   USDT_CONTRACT_ADDRESS,
@@ -36,14 +38,15 @@ const StatCard = ({ title, heading }) => {
   );
 };
 
-const Row = ({
-  img,
-  tokenName,
-  balance,
-  price,
-  value,
-  type = "Native Token",
-}) => {
+const Row = ({ img, tokenName, balance, price, type = "Native Token" }) => {
+  const [value, setValue] = useState("0");
+  useEffect(() => {
+    const p = Number(price);
+    const bal = Number(balance);
+    let v = Number(p * bal).toFixed(2);
+    isNaN(v) ? (v = "0") : (v += "");
+    setValue(v);
+  }, [setValue, price, balance]);
   return (
     <tr className="[&>*:first-child]:pl-8 [&>*:last-child]:pr-8">
       <td className="py-3 md:py-2">
@@ -67,10 +70,10 @@ const Row = ({
         <p className="text-sm text-center">{balance}</p>
       </td>
       <td>
-        <p className="text-sm text-center">{price}</p>
+        <p className="text-sm text-center">${price}</p>
       </td>
       <td>
-        <p className="text-sm text-center">{value}</p>
+        <p className="text-sm text-center">${value}</p>
       </td>
     </tr>
   );
@@ -183,7 +186,7 @@ function PortfolioPage() {
   const { data: nativeBalance, refetch: nativeBalance_refetch } = useBalance({
     address,
     enabled: address ? true : false,
-    chainId: chain?.id,
+    chainId: 1,
     onError(err) {
       console.error(err);
       console.error(`❌ native balance`);
@@ -203,6 +206,28 @@ function PortfolioPage() {
     onError(err) {
       console.error(err);
       console.error(`❌ usdt-eth balance`);
+    },
+  });
+  /**
+   * END - get USDT-ETH Balance
+   */
+
+  /**
+   * START - get ETH price
+   */
+  const [ethPrice, setEthPrice] = useState("0");
+  const { refetch: nativeTokenPriceUSD_refetch } = useContractRead({
+    address: NATIVE_TOKEN_PRICE_CONTRACT,
+    abi: DLANCE_ABI_getETHLatestPrice,
+    functionName: "getETHLatestPrice",
+    chainId: 1,
+    onSuccess(data) {
+      setEthPrice(formatUnits(data, 18));
+      console.log(`✅getETHLatestPrice() - $${formatUnits(data, 18)}`);
+    },
+    onError(err) {
+      console.error(err);
+      console.error(`❌caught - getETHLatestPrice()`);
     },
   });
   /**
@@ -294,6 +319,7 @@ function PortfolioPage() {
           nativeBalance_refetch();
           getDepositInfo_refetch();
           stakeTokenBalance_refetch();
+          nativeTokenPriceUSD_refetch();
         });
     },
     [
@@ -302,6 +328,7 @@ function PortfolioPage() {
       publicClient,
       stakeTokenBalance_refetch,
       totalStaked_refetch,
+      nativeTokenPriceUSD_refetch,
     ]
   );
   /**
@@ -541,8 +568,7 @@ function PortfolioPage() {
                   balance={`${Number(
                     stakeTokenBalance?.formatted
                   ).toLocaleString()}`}
-                  price="$1,845.23"
-                  value="$5.64"
+                  price="1,845.23"
                   type="Staking Token"
                 />
 
@@ -552,8 +578,7 @@ function PortfolioPage() {
                   balance={`${Number(
                     Number(nativeBalance?.formatted).toFixed(6)
                   ).toLocaleString()}`}
-                  price="$1,845.23"
-                  value="$5.64"
+                  price={`${ethPrice}`}
                 />
 
                 <Row
@@ -562,8 +587,7 @@ function PortfolioPage() {
                   balance={`${Number(
                     Number(usdtBalance?.formatted).toFixed(6)
                   ).toLocaleString()}`}
-                  price="$1,845.23"
-                  value="$5.64"
+                  price="1.00"
                   type={`${chain?.network.toUpperCase()}-Stablecoin`}
                 />
               </tbody>

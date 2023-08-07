@@ -44,3 +44,23 @@ export const DLANCE_ABI_approve = [
     type: "function",
   },
 ];
+
+/**
+ * START - for fetching USD price of ETH
+ */
+
+export const NATIVE_TOKEN_PRICE_CONTRACT =
+  "0x492fA40F7577950632623B2Ba51a8Ed29397cB23"; //DeeLance_PreSale-contract
+export const DLANCE_ABI_getETHLatestPrice = [
+  {
+    inputs: [],
+    name: "getETHLatestPrice",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+];
+
+/**
+ * END - for fetching USD price of ETH
+ */
