@@ -135,8 +135,10 @@ function StakingBox() {
       infoMsg = `View Tx on BlockExplorer`;
       if (contractfnName === "approve") {
         title = `Allowance approval in progress`;
-      } else if (contractfnName === "deposit") {
+      } else if (contractfnName === "stake") {
         title = `Staking Tx in progress`;
+      } else if (contractfnName === "unstake") {
+        title = `Un-Staking Tx in progress`;
       }
 
       // info-toast : txHash is in the pool - waiting for tx
@@ -150,8 +152,10 @@ function StakingBox() {
           if (contractfnName === "approve") {
             title = `Ready to start staking`;
             setFlexibleAllowance(true);
-          } else if (contractfnName === "deposit") {
+          } else if (contractfnName === "stake") {
             title = `Successfully Staked`;
+          } else if (contractfnName === "unstake") {
+            title = `Successfully Un-Staked`;
           }
           console.log(`waited for tx`);
           console.log(data);
@@ -235,6 +239,7 @@ function StakingBox() {
               ) : null}
               {tab === "unstake" ? (
                 <UnStake
+                  handleTxWaiting={handleTxWaiting}
                   dlanceBal={stakeTokenBalance}
                   userStakedTokens={userStakedTokens}
                   getDepositInfo_refetch={getDepositInfo_refetch}

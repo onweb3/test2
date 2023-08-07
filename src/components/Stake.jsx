@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Button from "./Button";
 import StakeInputBox from "./StakeInputBox";
-import { TbReload } from "react-icons/tb";
+import { TbProgress, TbReload } from "react-icons/tb";
 import {
   useAccount,
   useContractRead,
@@ -105,7 +105,7 @@ function Stake({
    */
   const [stakeAmount, setStakeAmount] = useState("");
 
-  const { write: sendStakeTx } = useContractWrite({
+  const { write: sendStakeTx, status: stakeTx_status } = useContractWrite({
     address: CONTRACT_ADDRESS_FLEXIBLE_STAKING,
     abi: FLEXIBLE_STAKING_ABI,
     functionName: "deposit",
@@ -113,7 +113,7 @@ function Stake({
     onSuccess(data) {
       console.log(`TxHash : ${data.hash}`);
       console.log("Success - flexible staking\n", data);
-      handleTxWaiting(data.hash, "deposit");
+      handleTxWaiting(data.hash, "stake");
       console.log(`✅staked tx sent`);
     },
     onError(err) {
@@ -212,8 +212,24 @@ function Stake({
                 variant={0}
                 className="w-full"
                 onClick={() => stakeTokens()}
+                disabled={stakeTx_status?.toUpperCase() === "LOADING"}
+                style={{
+                  filter: `grayscale(${
+                    stakeTx_status?.toUpperCase() === "LOADING" ? "1" : "0"
+                  })`,
+                }}
               >
-                STAKE $DLANCE
+                {stakeTx_status?.toUpperCase() === "LOADING" ? (
+                  <TbProgress
+                    style={{
+                      animation: "icon-spin 1s infinite linear",
+                      height: "1.5rem",
+                      width: "100%",
+                    }}
+                  />
+                ) : (
+                  `STAKE $DLANCE`
+                )}
               </Button>
             ) : (
               <Button
