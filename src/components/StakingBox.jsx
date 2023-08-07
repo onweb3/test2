@@ -22,7 +22,7 @@ import {
   FLEXIBLE_STAKING_ABI,
 } from "FluidStakingContract";
 import { toast } from "react-toastify";
-import { formatUnits } from "viem";
+import { formatEther, formatUnits } from "viem";
 
 function StakingBox() {
   const [tab, setTab] = useState("stake");
@@ -72,6 +72,17 @@ function StakingBox() {
       console.log(data);
     },
   });
+
+  const { data: totalStaked, isFetching: isTotalStakedFetching } =
+    useContractRead({
+      address: CONTRACT_ADDRESS_FLEXIBLE_STAKING,
+      abi: FLEXIBLE_STAKING_ABI,
+      functionName: "total_staked",
+      chainId: chain?.id,
+      enabled: address ? true : false,
+      watch: true,
+    });
+
   useEffect(() => {
     if (!isConnected || !getDepositInfo_data) {
       setUserRewards("0");
@@ -231,6 +242,9 @@ function StakingBox() {
    * END : handle waiting for txs
    */
 
+  console.log("totalStaked");
+  console.log(totalStaked);
+
   return (
     <div className="bg-feature-card-border p-2 rounded-lg shadow-[0_0_1rem_rgba(0,0,0,1)] ">
       <div className="border-2 border-main-green-shade-40 rounded-xl pt-6 pb-10 bg-green-radial transition-all duration-300">
@@ -239,7 +253,9 @@ function StakingBox() {
             FLUID STAKING
           </h1>
           <p className="text-center font-medium mb-2 text-sm">
-            Total $DLANCE in Fluid Staking 476,852,255.89
+            {/* Total $DLANCE in Fluid Staking 476,852,255.89 */}
+            Total $DLANCE in Fluid Staking{" "}
+            {Number(formatEther(totalStaked, "wei")).toFixed(2)}
           </p>
           <p className="text-center font-bold text-sm xl:text-base">
             APY: {APY_FLUID_STAKING}%
