@@ -332,7 +332,7 @@ function Stake({
                   onClick={() => approveAllowance()}
                   disabled={enableStaking_isLoading}
                 >
-                  ADD ALLOWNACE
+                  ADD ALLOWANCE
                 </Button>
                 <div className="flex justify-between">
                   <p className="text-xs mt-3 font-light text-right">
