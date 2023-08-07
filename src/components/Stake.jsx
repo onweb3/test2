@@ -304,33 +304,45 @@ function Stake({
 
   return (
     <div>
-      {/* <p className="text-center mb-5">Balance: 0.000 DLANCE</p> */}
-
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs sm:text-sm opacity-80">Amount</p>
         <p className="text-xs sm:text-sm opacity-80">
           My Balance: {formattedTokenBal} DLANCE
         </p>
       </div>
-
       <div>
         <StakeInputBox setValue={setStakeAmount} value={stakeAmount} />
-        <div className="flex justify-between">
-          <p className="text-xs mt-3 font-light">
-            Min Stake Amount: {MIN_STAKE_AMOUNT} DLANCE
-          </p>
-          <p className="text-xs mt-3 font-light">
-            Allowance left: {Number(flexibleAllowance).toLocaleString()}
-          </p>
-        </div>
+        <p className="text-xs mt-3 font-light">
+          Min Stake Amount: {MIN_STAKE_AMOUNT} DLANCE
+        </p>
       </div>
       {isConnected ? (
         <>
           <div className="text-[80%] xl:text-[90%] mt-6 mb-10">
-            {Number(flexibleAllowance) >= Number(stakeAmount) ? (
+            {Number(flexibleAllowance) < MIN_STAKE_AMOUNT ||
+            Number(flexibleAllowance) < Number(stakeAmount) ? (
+              <div>
+                <Button
+                  variant={0}
+                  className="w-full"
+                  onClick={() => approveAllowance()}
+                  disabled={enableStaking_isLoading}
+                >
+                  ADD ALLOWNACE
+                </Button>
+                <div className="flex justify-between">
+                  <p className="text-xs mt-3 font-light text-right">
+                    Min allowance required: {MIN_STAKE_AMOUNT} {TOKEN_SYMBOL}
+                  </p>
+                  <p className="text-xs mt-3 font-light">
+                    Allowance left: {Number(flexibleAllowance).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            ) : (
               <Button
                 variant={0}
-                className="w-full"
+                className="w-full mb-[4.25rem]"
                 onClick={() => stakeTokens()}
                 disabled={stakeTx_status?.toUpperCase() === "LOADING"}
                 style={{
@@ -350,15 +362,6 @@ function Stake({
                 ) : (
                   `STAKE $DLANCE`
                 )}
-              </Button>
-            ) : (
-              <Button
-                variant={0}
-                className="w-full"
-                onClick={() => approveAllowance()}
-                disabled={enableStaking_isLoading}
-              >
-                ADD ALLOWNACE
               </Button>
             )}
           </div>
