@@ -4,7 +4,9 @@ import {
 } from "FluidStakingContract";
 import {
   BLOCK_SCANLINK,
+  DLANCE_ABI_PRICEUSD,
   DLANCE_ABI_getETHLatestPrice,
+  DLANCE_TOKEN_PRICEUSD_CONTRACT,
   NATIVE_TOKEN_PRICE_CONTRACT,
   TOKEN_CONTRACT_ADDRESS_ETH as TOKEN_CONTRACT_ADDRESS,
   TOKEN_DECIMALS,
@@ -15,7 +17,7 @@ import { ConnectButton } from "components/ConnectButton";
 import { useCallback, useEffect, useState } from "react";
 import { TbProgress } from "react-icons/tb";
 import { toast } from "react-toastify";
-import { formatUnits } from "viem";
+import { formatUnits, parseUnits } from "viem";
 import {
   useAccount,
   useBalance,
@@ -67,13 +69,20 @@ const Row = ({ img, tokenName, balance, price, type = "Native Token" }) => {
         </div>
       </td>
       <td>
-        <p className="text-sm text-center">{balance}</p>
+        <p className="text-sm text-center">
+          {Number(balance).toLocaleString()}
+        </p>
       </td>
       <td>
-        <p className="text-sm text-center">${price}</p>
+        <p className="text-sm text-center">
+          {/* ${Number(price).toLocaleString()} */}
+          {`$ ${price}`}
+        </p>
       </td>
       <td>
-        <p className="text-sm text-center">${value}</p>
+        <p className="text-sm text-center">
+          $ {Number(value).toLocaleString()}
+        </p>
       </td>
     </tr>
   );
@@ -220,6 +229,7 @@ function PortfolioPage() {
     address: NATIVE_TOKEN_PRICE_CONTRACT,
     abi: DLANCE_ABI_getETHLatestPrice,
     functionName: "getETHLatestPrice",
+    enabled: address ? true : false,
     chainId: 1,
     onSuccess(data) {
       setEthPrice(formatUnits(data, 18));
@@ -231,7 +241,39 @@ function PortfolioPage() {
     },
   });
   /**
-   * END - get USDT-ETH Balance
+   * END - get ETH price
+   */
+  /**
+   * START - get DLANCE price
+   */
+  const [stakingTokenPrice, setStakingToken] = useState("0");
+  const { refetch: stakingTokenPrice_refetch } = useContractRead({
+    address: DLANCE_TOKEN_PRICEUSD_CONTRACT,
+    abi: DLANCE_ABI_PRICEUSD,
+    enabled: address ? true : false,
+    functionName: "getAmountsOut",
+    chainId: 1,
+    args: [
+      "1000000000000000000", //1 DLANCE in wei
+      [
+        `0x7D60dE2E7D92Cb5C863bC82f8d59b37C59fC0A7A`,
+        `0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2`,
+        `0xdAC17F958D2ee523a2206206994597C13D831ec7`,
+      ],
+    ],
+    onSuccess(data) {
+      setStakingToken(formatUnits(data[2], "6"));
+      console.log(
+        `✅getAmountsOut() - USD$ ${formatUnits(data[2], "6")} per DLANCE`
+      );
+    },
+    onError(err) {
+      console.error(err);
+      console.error(`❌caught - getAmountsOut()`);
+    },
+  });
+  /**
+   * END - get DLANCE Balance
    */
 
   /**
@@ -320,6 +362,7 @@ function PortfolioPage() {
           getDepositInfo_refetch();
           stakeTokenBalance_refetch();
           nativeTokenPriceUSD_refetch();
+          stakingTokenPrice_refetch();
         });
     },
     [
@@ -329,6 +372,7 @@ function PortfolioPage() {
       stakeTokenBalance_refetch,
       totalStaked_refetch,
       nativeTokenPriceUSD_refetch,
+      stakingTokenPrice_refetch,
     ]
   );
   /**
@@ -565,10 +609,8 @@ function PortfolioPage() {
                 <Row
                   img="/images/tokens/dee-black.svg"
                   tokenName={`DLANCE`}
-                  balance={`${Number(
-                    stakeTokenBalance?.formatted
-                  ).toLocaleString()}`}
-                  price="1,845.23"
+                  balance={`${Number(Number(stakeTokenBalance?.formatted))}`}
+                  price={stakingTokenPrice}
                   type="Staking Token"
                 />
 
@@ -577,7 +619,7 @@ function PortfolioPage() {
                   tokenName={`${nativeBalance?.symbol.toUpperCase()}`}
                   balance={`${Number(
                     Number(nativeBalance?.formatted).toFixed(6)
-                  ).toLocaleString()}`}
+                  )}`}
                   price={`${ethPrice}`}
                 />
 
@@ -586,7 +628,7 @@ function PortfolioPage() {
                   tokenName={`${usdtBalance?.symbol.toUpperCase()}`}
                   balance={`${Number(
                     Number(usdtBalance?.formatted).toFixed(6)
-                  ).toLocaleString()}`}
+                  )}`}
                   price="1.00"
                   type={`${chain?.network.toUpperCase()}-Stablecoin`}
                 />

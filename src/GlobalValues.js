@@ -46,6 +46,29 @@ export const DLANCE_ABI_approve = [
 ];
 
 /**
+ * START - for fetching USD price of DLANCE
+ */
+export const DLANCE_TOKEN_PRICEUSD_CONTRACT =
+  "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+export const DLANCE_ABI_PRICEUSD = [
+  {
+    inputs: [
+      { internalType: "uint256", name: "amountIn", type: "uint256" },
+      { internalType: "address[]", name: "path", type: "address[]" },
+    ],
+    name: "getAmountsOut",
+    outputs: [
+      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+];
+
+/**
+ * END - for fetching USD price of DLANCE
+ */
+/**
  * START - for fetching USD price of ETH
  */
 
