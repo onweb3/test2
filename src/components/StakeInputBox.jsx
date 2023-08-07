@@ -1,11 +1,13 @@
-function StakeInputBox({ value, setValue }) {
+function StakeInputBox({ value, setValue, maxBalToSet }) {
   /**
    * START - handleInputAmount
+   *
+   * e = a numerical value
+   * setVal = setter to call
    */
-  const handleInputAmount = (v, setVal) => {
+  const handleInputAmount = (e, setVal) => {
     // make sure it exists
     // isNaN will be true for values starting with . so made exception for it
-    let e = v?.target?.value;
     if (isNaN(e) && e !== ".") {
       return;
     }
@@ -49,13 +51,18 @@ function StakeInputBox({ value, setValue }) {
           type="text"
           className="h-full w-full flex bg-transparent px-4 text-base text-white outline-none border-2 border-transparent focus:border-main-green"
           placeholder="0"
-          onChange={(e) => handleInputAmount(e, setValue)}
+          onChange={(e) => handleInputAmount(e?.target?.value, setValue)}
           value={value}
         />
       </div>
       {/*  */}
 
-      <button className="bg-[rgba(255,255,255,.2)] flex items-center px-3 sm:px-4 text-xs sm:text-sm">
+      <button
+        className="bg-[rgba(255,255,255,.2)] flex items-center px-3 sm:px-4 text-xs sm:text-sm"
+        onClick={() => {
+          handleInputAmount(maxBalToSet, setValue);
+        }}
+      >
         Max
       </button>
     </div>

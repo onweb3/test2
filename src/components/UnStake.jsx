@@ -93,7 +93,11 @@ function UnStake({ userStakedTokens = "0", handleTxWaiting }) {
       </div>
 
       <div>
-        <StakeInputBox setValue={setUnstakeAmount} value={unstakeAmount} />
+        <StakeInputBox
+          setValue={setUnstakeAmount}
+          value={unstakeAmount}
+          maxBalToSet={userStakedTokens}
+        />
         {/* <p className="text-sm mt-3 font-light opacity-0">
           Min Stake Amount: 800 DLANCE
         </p> */}

@@ -311,7 +311,11 @@ function Stake({
         </p>
       </div>
       <div>
-        <StakeInputBox setValue={setStakeAmount} value={stakeAmount} />
+        <StakeInputBox
+          setValue={setStakeAmount}
+          value={stakeAmount}
+          maxBalToSet={dlanceBal?.formatted}
+        />
         <p className="text-xs mt-3 font-light">
           Min Stake Amount: {MIN_STAKE_AMOUNT} DLANCE
         </p>
