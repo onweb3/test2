@@ -4,6 +4,7 @@ import { bsc, bscTestnet, polygon } from "wagmi/chains";
 import { CoinbaseWalletConnector } from "wagmi/connectors/coinbaseWallet";
 import { InjectedConnector } from "wagmi/connectors/injected";
 import { MetaMaskConnector } from "wagmi/connectors/metaMask";
+import { infuraProvider } from "wagmi/providers/infura";
 
 import { publicProvider } from "wagmi/providers/public";
 // import { jsonRpcProvider } from "wagmi/providers/jsonRpc";
@@ -29,6 +30,9 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
     //       };
     //   },
     // }),
+    infuraProvider({
+      apiKey: import.meta.env.VITE_RPC_PROVIDER_API_ETH,
+    }),
     publicProvider(),
   ]
 );
