@@ -256,10 +256,9 @@ function PortfolioPage() {
       infoMsg = `View Tx on BlockExplorer`;
       if (contractfnName === "stakeRewards") {
         title = `Staking rewards in progress`;
+      } else if (contractfnName === "claimRewards") {
+        title = `Claiming rewards in progress`;
       }
-      //  else if (contractfnName === "unstake") {
-      //   title = `Un-Staking Tx in progress`;
-      // }
 
       // info-toast : txHash is in the pool - waiting for tx
       TxToast(txHash, title, infoMsg, "info");
@@ -271,10 +270,9 @@ function PortfolioPage() {
         .then((data) => {
           if (contractfnName === "stakeRewards") {
             title = `Rewards Staked Successfully`;
+          } else if (contractfnName === "claimRewards") {
+            title = `Rewards Claimed Successfully`;
           }
-          // else if (contractfnName === "unstake") {
-          //   title = `Successfully Un-Staked`;
-          // }
           console.log(`waited for tx`);
           console.log(data);
 
@@ -329,6 +327,14 @@ function PortfolioPage() {
           seconds = "0" + seconds;
         }
 
+        if (
+          Number(hours) === 0 &&
+          Number(minutes) === 0 &&
+          Number(seconds) === 0
+        ) {
+          console.error(`❌ don't have to wait before restaking rewards`);
+          return;
+        }
         if (Number(hours) === 0 && Number(minutes) === 0) {
           toast.warn(`Time left until restaking : ${seconds} seconds!`, {
             position: "bottom-center",
@@ -401,7 +407,7 @@ function PortfolioPage() {
       functionName: "stakeRewards",
       onSuccess(data) {
         console.log(`TxHash : ${data?.hash}`);
-        handleTxWaiting(data.hash, "stake");
+        handleTxWaiting(data.hash, "stakeRewards");
         console.log(`✅stakeRewards tx sent`);
       },
       onError(data) {
@@ -415,6 +421,26 @@ function PortfolioPage() {
 
   /**
    * END : "stakeRewards"
+   */
+
+  /**
+   * START - claimRewards/withdrawRewards
+   */
+  const { status: claimRewards_status, write: claimRewards } = useContractWrite(
+    {
+      address: CONTRACT_ADDRESS_FLEXIBLE_STAKING,
+      abi: FLEXIBLE_STAKING_ABI,
+      functionName: "claimRewards",
+      onSuccess(data) {
+        console.log(`TxHash : ${data?.hash}`);
+        handleTxWaiting(data.hash, "claimRewards");
+        console.log(`✅claimRewards tx sent`);
+      },
+    }
+  );
+
+  /**
+   * END - claimRewards
    */
 
   return (
@@ -432,7 +458,7 @@ function PortfolioPage() {
             heading={`${Number(userRewards).toLocaleString()} DLANCE`}
           />
           <StatCard
-            title="Total Staked till date"
+            title="Globally Staked till date"
             heading={`${Number(totalStaked).toLocaleString()} DLANCE`}
           />
         </div>
@@ -465,10 +491,14 @@ function PortfolioPage() {
           </div>
           <button
             className={`min-w-[150px] underline text-xs sm:text-sm xl:text-base w-fit ${
-              !isConnected ? "cursor-not-allowed grayscale" : ""
+              !isConnected || claimRewards_status?.toUpperCase() === "LOADING"
+                ? "cursor-not-allowed grayscale"
+                : ""
             }`}
+            disabled={claimRewards_status?.toUpperCase() === "LOADING"}
+            onClick={() => claimRewards()}
           >
-            {stakeRewards_status?.toUpperCase() === "LOADING" ? (
+            {claimRewards_status?.toUpperCase() === "LOADING" ? (
               <TbProgress
                 style={{
                   animation: "icon-spin 1s infinite linear",
