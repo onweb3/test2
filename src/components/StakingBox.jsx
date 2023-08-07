@@ -67,7 +67,7 @@ function StakingBox() {
     args: [address],
     onSuccess(data) {
       console.log(data);
-      console.log(`Successfully fetched "getDepositInfo()"`);
+      console.log(`🏦getDepositInfo()`);
     },
   });
   useEffect(() => {

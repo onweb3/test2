@@ -3,16 +3,25 @@ import {
   FLEXIBLE_STAKING_ABI,
 } from "FluidStakingContract";
 import {
+  BLOCK_SCANLINK,
   TOKEN_CONTRACT_ADDRESS_ETH as TOKEN_CONTRACT_ADDRESS,
   TOKEN_DECIMALS,
-  TOKEN_SYMBOL,
   USDT_CONTRACT_ADDRESS,
 } from "GlobalValues";
 import Button from "components/Button";
 import { ConnectButton } from "components/ConnectButton";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { TbProgress } from "react-icons/tb";
+import { toast } from "react-toastify";
 import { formatUnits } from "viem";
-import { useAccount, useBalance, useContractRead, useNetwork } from "wagmi";
+import {
+  useAccount,
+  useBalance,
+  useContractRead,
+  useContractWrite,
+  useNetwork,
+  usePublicClient,
+} from "wagmi";
 
 const StatCard = ({ title, heading }) => {
   return (
@@ -120,22 +129,15 @@ function PortfolioPage() {
   const [userStakedTokens, setUserStakedTokens] = useState("0");
   const [userRewards, setUserRewards] = useState("0");
 
-  const {
-    data: getDepositInfo_data,
-    isFetching: depositInfo_isFetching,
-    refetch: getDepositInfo_refetch,
-  } = useContractRead({
-    address: CONTRACT_ADDRESS_FLEXIBLE_STAKING,
-    abi: FLEXIBLE_STAKING_ABI,
-    functionName: "getDepositInfo",
-    chainId: chain?.id,
-    enabled: isConnected ? true : false,
-    args: [address],
-    onSuccess(data) {
-      console.log(data);
-      console.log(`✅getDepositInfo()`);
-    },
-  });
+  const { data: getDepositInfo_data, refetch: getDepositInfo_refetch } =
+    useContractRead({
+      address: CONTRACT_ADDRESS_FLEXIBLE_STAKING,
+      abi: FLEXIBLE_STAKING_ABI,
+      functionName: "getDepositInfo",
+      chainId: chain?.id,
+      enabled: isConnected ? true : false,
+      args: [address],
+    });
   useEffect(() => {
     if (!isConnected || !getDepositInfo_data) {
       setUserRewards("0");
@@ -206,6 +208,126 @@ function PortfolioPage() {
    * END - get USDT-ETH Balance
    */
 
+  /**
+   * COPIED & MODIFIED FROM : StakingBox.jsx
+   * START : generic tx toasts
+   */
+  const TxToast = (
+    hash,
+    title,
+    infoMsg = "View Transaction on BlockExplorer",
+    type,
+    autoClose = false
+  ) => {
+    return toast(
+      <div>
+        {title} <br />
+        <a
+          target="_blank"
+          rel="noreferrer"
+          href={BLOCK_SCANLINK + hash}
+          className="text-[#5685fc] text-sm"
+        >
+          {infoMsg}
+        </a>
+      </div>,
+      {
+        type,
+        autoClose: autoClose,
+        closeOnClick: false,
+      }
+    );
+  };
+  /**
+   * COPIED & MODIFIED FROM : StakingBox.jsx
+   * END : generic tx toasts
+   */
+  /**
+   * COPIED & MODIFIED FROM : StakingBox.jsx
+   * START : handle waiting for txs
+   */
+  const publicClient = usePublicClient({ chainId: chain?.id });
+  const handleTxWaiting = useCallback(
+    (txHash, contractfnName = "stakeRewards") => {
+      console.log(txHash);
+      let infoMsg = "";
+      let title = "";
+
+      infoMsg = `View Tx on BlockExplorer`;
+      if (contractfnName === "stakeRewards") {
+        title = `Staking rewards in progress`;
+      }
+      //  else if (contractfnName === "unstake") {
+      //   title = `Un-Staking Tx in progress`;
+      // }
+
+      // info-toast : txHash is in the pool - waiting for tx
+      TxToast(txHash, title, infoMsg, "info");
+      publicClient
+        .waitForTransactionReceipt({
+          hash: txHash,
+          confirmations: 2,
+        })
+        .then((data) => {
+          if (contractfnName === "stakeRewards") {
+            title = `Rewards Staked Successfully`;
+          }
+          // else if (contractfnName === "unstake") {
+          //   title = `Successfully Un-Staked`;
+          // }
+          console.log(`waited for tx`);
+          console.log(data);
+
+          // success-toast : txHash is successful
+          toast.dismiss();
+          TxToast(txHash, title, infoMsg, "success", 3000);
+          console.log(`✅-log: ${contractfnName}-TxSuccessful`);
+        })
+        .catch((err) => {
+          console.log(`ERROR waited for tx - type : ${contractfnName}`);
+          console.log(err);
+          title = "Tx. Failed";
+          infoMsg = "Something went wrong";
+          TxToast(txHash, title, infoMsg, "error", 3000);
+        })
+        .finally(() => {
+          totalStaked_refetch();
+          getDepositInfo_refetch();
+        });
+    },
+    [publicClient, getDepositInfo_refetch, totalStaked_refetch]
+  );
+  /**
+   * * COPIED & MODIFIED FROM : StakingBox.jsx
+   * END : handle waiting for txs
+   */
+
+  /**
+   * START : "stakeRewards"
+   */
+  const { status: stakeRewards_status, write: stakeRewards } = useContractWrite(
+    {
+      address: CONTRACT_ADDRESS_FLEXIBLE_STAKING,
+      abi: FLEXIBLE_STAKING_ABI,
+      functionName: "stakeRewards",
+      onSuccess(data) {
+        console.log(`TxHash : ${data?.hash}`);
+        handleTxWaiting(data.hash, "stake");
+        console.log(`✅stakeRewards tx sent`);
+      },
+      onError(data) {
+        // timeLeftForStakingRewards();
+        // timeLeft_refetch();
+        console.error(data);
+        console.error(`dev-stakeRewards caught`);
+      },
+    }
+  );
+
+  /**
+   * END : "stakeRewards"
+   */
+
   return (
     <div className="py-8 lg:py-10 px-6 sm:px-8 lg:px-12 space-y-16 sm:space-y-10">
       <Wrapper>
@@ -231,19 +353,43 @@ function PortfolioPage() {
         >
           <div className={`text-[70%] sm:text-[80%] xl:text-[90%]`}>
             <Button
-              className={`${
-                !isConnected ? "cursor-not-allowed grayscale" : ""
+              className={`min-w-[150px] ${
+                !isConnected || stakeRewards_status?.toUpperCase() === "LOADING"
+                  ? "cursor-not-allowed grayscale"
+                  : ""
               }`}
+              disabled={stakeRewards_status?.toUpperCase() === "LOADING"}
+              onClick={() => stakeRewards()}
             >
-              Stake Rewards
+              {stakeRewards_status?.toUpperCase() === "LOADING" ? (
+                <TbProgress
+                  style={{
+                    animation: "icon-spin 1s infinite linear",
+                    height: "1.5rem",
+                    width: "100%",
+                  }}
+                />
+              ) : (
+                `Stake Rewards`
+              )}
             </Button>
           </div>
           <button
-            className={`underline text-xs sm:text-sm xl:text-base w-fit ${
+            className={`min-w-[150px] underline text-xs sm:text-sm xl:text-base w-fit ${
               !isConnected ? "cursor-not-allowed grayscale" : ""
             }`}
           >
-            Withdraw Rewards
+            {stakeRewards_status?.toUpperCase() === "LOADING" ? (
+              <TbProgress
+                style={{
+                  animation: "icon-spin 1s infinite linear",
+                  height: "1.5rem",
+                  width: "100%",
+                }}
+              />
+            ) : (
+              `Withdraw Rewards`
+            )}
           </button>
         </div>
       </Wrapper>

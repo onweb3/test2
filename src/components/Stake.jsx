@@ -243,7 +243,7 @@ function Stake({
             )}
           </div>
 
-          <div>
+          {/* <div>
             <button className="w-fit flex items-center space-x-2 mx-auto mb-6">
               <span>My Rewards</span>
               <TbReload
@@ -276,7 +276,7 @@ function Stake({
             <button className="w-fit text-center text-sm font-bold underline mx-auto flex">
               Withdraw Rewards
             </button>
-          </div>
+          </div> */}
         </>
       ) : null}
     </div>
