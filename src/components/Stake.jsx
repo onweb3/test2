@@ -56,6 +56,7 @@ function Stake({
   const { isConnected, address: userAddress } = useAccount();
   const { chain } = useNetwork();
 
+  // eslint-disable-next-line no-unused-vars
   const { refetch: fStaking_refetch } = useContractRead({
     address: TOKEN_CONTRACT_ADDRESS_ETH,
     abi: DLANCE_ABI_allowance,
@@ -187,6 +188,149 @@ function Stake({
    * END : Stake Tokens - stakeTokens()
    */
 
+  /**
+   * START - compoundRewardsTimer()
+   */
+  const { refetch: timeLeft_refetch } = useContractRead({
+    address: CONTRACT_ADDRESS_FLEXIBLE_STAKING,
+    abi: FLEXIBLE_STAKING_ABI,
+    functionName: "compoundRewardsTimer",
+    enabled: false,
+    chainId: chain?.id,
+    args: [userAddress],
+    onSuccess(data) {
+      function convertHMS(value) {
+        const sec = parseInt(value, 10); // convert value to number if it's string
+        let hours = Math.floor(sec / 3600); // get hours
+        let minutes = Math.floor((sec - hours * 3600) / 60); // get minutes
+        let seconds = sec - hours * 3600 - minutes * 60; //  get seconds
+        // add 0 if value < 10; Example: 2 => 02
+        if (hours < 10) {
+          hours = "0" + hours;
+        }
+        if (minutes < 10) {
+          minutes = "0" + minutes;
+        }
+        if (seconds < 10) {
+          seconds = "0" + seconds;
+        }
+
+        if (
+          Number(hours) === 0 &&
+          Number(minutes) === 0 &&
+          Number(seconds) === 0
+        ) {
+          console.error(`❌ don't have to wait before restaking rewards`);
+          return;
+        }
+        if (Number(hours) === 0 && Number(minutes) === 0) {
+          toast.warn(`Time left until restaking : ${seconds} seconds!`, {
+            position: "bottom-center",
+            autoClose: 1500,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+            type: "info",
+            style: {
+              maxWidth: "92vw",
+            },
+          });
+        } else if (Number(hours) === 0 && Number(minutes) > 0) {
+          toast.warn(
+            `Time left until restaking : ${minutes} min : ${seconds} seconds!!`,
+            {
+              position: "bottom-center",
+              autoClose: 1500,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "dark",
+              type: "info",
+              style: {
+                maxWidth: "92vw",
+              },
+            }
+          );
+        } else {
+          toast.warn(
+            `Time left until restaking : ${hours} hr :${minutes} min!!!`,
+            {
+              position: "bottom-center",
+              autoClose: 1500,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "dark",
+              type: "info",
+              style: {
+                maxWidth: "92vw",
+              },
+            }
+          );
+        }
+        const timeLeft = { hr: hours, min: minutes, sec: seconds };
+        return timeLeft;
+      }
+      convertHMS(data);
+    },
+  });
+  /**
+   * END - compoundRewardsTimer()
+   */
+
+  /**
+   * START : "stakeRewards"
+   */
+  const { status: stakeRewards_status, write: stakeRewards } = useContractWrite(
+    {
+      address: CONTRACT_ADDRESS_FLEXIBLE_STAKING,
+      abi: FLEXIBLE_STAKING_ABI,
+      functionName: "stakeRewards",
+      onSuccess(data) {
+        console.log(`TxHash : ${data?.hash}`);
+        handleTxWaiting(data.hash, "stakeRewards");
+        console.log(`✅stakeRewards tx sent`);
+      },
+      onError(data) {
+        // timeLeftForStakingRewards();
+        timeLeft_refetch();
+        console.error(data);
+        console.error(`dev-stakeRewards caught`);
+      },
+    }
+  );
+
+  /**
+   * END : "stakeRewards"
+   */
+
+  /**
+   * START - claimRewards/withdrawRewards
+   */
+  const { status: claimRewards_status, write: claimRewards } = useContractWrite(
+    {
+      address: CONTRACT_ADDRESS_FLEXIBLE_STAKING,
+      abi: FLEXIBLE_STAKING_ABI,
+      functionName: "claimRewards",
+      onSuccess(data) {
+        console.log(`TxHash : ${data?.hash}`);
+        handleTxWaiting(data.hash, "claimRewards");
+        console.log(`✅claimRewards tx sent`);
+      },
+    }
+  );
+
+  /**
+   * END - claimRewards
+   */
+
   return (
     <div>
       {/* <p className="text-center mb-5">Balance: 0.000 DLANCE</p> */}
@@ -243,7 +387,7 @@ function Stake({
             )}
           </div>
 
-          {/* <div>
+          <div>
             <button className="w-fit flex items-center space-x-2 mx-auto mb-6">
               <span>My Rewards</span>
               <TbReload
@@ -268,15 +412,53 @@ function Stake({
             </div>
 
             <div className="text-[80%] xl:text-[90%] mt-4 mb-8">
-              <Button variant={1} className="w-full">
-                RE-INVEST REWARDS
+              <Button
+                variant={1}
+                className={`min-w-[150px] w-full ${
+                  !isConnected ||
+                  stakeRewards_status?.toUpperCase() === "LOADING"
+                    ? "cursor-not-allowed grayscale"
+                    : ""
+                }`}
+                disabled={stakeRewards_status?.toUpperCase() === "LOADING"}
+                onClick={() => stakeRewards()}
+              >
+                {stakeRewards_status?.toUpperCase() === "LOADING" ? (
+                  <TbProgress
+                    style={{
+                      animation: "icon-spin 1s infinite linear",
+                      height: "1.5rem",
+                      width: "100%",
+                    }}
+                  />
+                ) : (
+                  `RE-INVEST REWARDS`
+                )}
               </Button>
             </div>
 
-            <button className="w-fit text-center text-sm font-bold underline mx-auto flex">
-              Withdraw Rewards
+            <button
+              className={`w-fit text-center text-sm font-bold underline mx-auto flex ${
+                !isConnected || claimRewards_status?.toUpperCase() === "LOADING"
+                  ? "cursor-not-allowed grayscale"
+                  : ""
+              }`}
+              disabled={claimRewards_status?.toUpperCase() === "LOADING"}
+              onClick={() => claimRewards()}
+            >
+              {claimRewards_status?.toUpperCase() === "LOADING" ? (
+                <TbProgress
+                  style={{
+                    animation: "icon-spin 1s infinite linear",
+                    height: "1.5rem",
+                    width: "100%",
+                  }}
+                />
+              ) : (
+                `Withdraw Rewards`
+              )}
             </button>
-          </div> */}
+          </div>
         </>
       ) : null}
     </div>
