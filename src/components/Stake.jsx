@@ -320,6 +320,7 @@ function Stake({
           Min Stake Amount: {MIN_STAKE_AMOUNT} DLANCE
         </p>
       </div>
+
       {isConnected ? (
         <>
           <div className="text-[80%] xl:text-[90%] mt-6 mb-10">

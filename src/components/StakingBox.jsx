@@ -338,14 +338,15 @@ function StakingBox() {
             <ConnectButton />
           </div>
 
-          {/* <a
-            href="/"
+          <a
+            href="https://deelance.com/en/academy/tutorials/4R5NryDvOmK9yVJCw6syGr"
             target="_blank"
             className="text-main-green w-fit block mx-auto mt-5 underline"
+            rel="noreferrer"
           >
             How to Stake{" "}
             <FaExternalLinkAlt className="inline-block align-middle" />{" "}
-          </a> */}
+          </a>
         </main>
       </div>
     </div>
