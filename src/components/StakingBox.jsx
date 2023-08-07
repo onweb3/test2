@@ -30,7 +30,7 @@ function StakingBox() {
   /**
    * START - get Deelance Balance
    */
-  const { data: stakeTokenBalance } = useBalance({
+  const { data: stakeTokenBalance, refetch: refetchTokenBalance } = useBalance({
     address,
     enabled: address ? true : false,
     token: TOKEN_CONTRACT_ADDRESS,
@@ -66,8 +66,8 @@ function StakingBox() {
     enabled: isConnected ? true : false,
     args: [address],
     onSuccess(data) {
-      console.log(data);
       console.log(`🏦getDepositInfo()`);
+      console.log(data);
     },
   });
   useEffect(() => {
@@ -143,6 +143,10 @@ function StakingBox() {
         title = `Staking Tx in progress`;
       } else if (contractfnName === "unstake") {
         title = `Un-Staking Tx in progress`;
+      } else if (contractfnName === "stakeRewards") {
+        title = `Staking rewards in progress`;
+      } else if (contractfnName === "claimRewards") {
+        title = `Claiming rewards in progress`;
       }
 
       // info-toast : txHash is in the pool - waiting for tx
@@ -160,7 +164,12 @@ function StakingBox() {
             title = `Successfully Staked`;
           } else if (contractfnName === "unstake") {
             title = `Successfully Un-Staked`;
+          } else if (contractfnName === "stakeRewards") {
+            title = `Rewards Staked Successfully`;
+          } else if (contractfnName === "claimRewards") {
+            title = `Rewards Claimed Successfully`;
           }
+
           console.log(`waited for tx`);
           console.log(data);
 
@@ -178,11 +187,11 @@ function StakingBox() {
           TxToast(txHash, title, infoMsg, "error", 3000);
         })
         .finally(() => {
-          //   inSaleUSDvalue_refetch();
+          refetchTokenBalance();
           getDepositInfo_refetch();
         });
     },
-    [publicClient, getDepositInfo_refetch]
+    [publicClient, getDepositInfo_refetch, refetchTokenBalance]
   );
   /**
    * END : handle waiting for txs

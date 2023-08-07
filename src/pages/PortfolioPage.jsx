@@ -163,23 +163,24 @@ function PortfolioPage() {
   /**
    * START - get Deelance Balance
    */
-  const { data: stakeTokenBalance } = useBalance({
-    address,
-    enabled: address ? true : false,
-    token: TOKEN_CONTRACT_ADDRESS,
-    chainId: chain?.id,
-    onError(err) {
-      console.error(err);
-      console.error(`❌ Dlance balance`);
-    },
-  });
+  const { data: stakeTokenBalance, refetch: stakeTokenBalance_refetch } =
+    useBalance({
+      address,
+      enabled: address ? true : false,
+      token: TOKEN_CONTRACT_ADDRESS,
+      chainId: chain?.id,
+      onError(err) {
+        console.error(err);
+        console.error(`❌ Dlance balance`);
+      },
+    });
   /**
    * END - get Deelance Balance
    */
   /**
    * START - get Native Balance
    */
-  const { data: nativeBalance } = useBalance({
+  const { data: nativeBalance, refetch: nativeBalance_refetch } = useBalance({
     address,
     enabled: address ? true : false,
     chainId: chain?.id,
@@ -290,10 +291,18 @@ function PortfolioPage() {
         })
         .finally(() => {
           totalStaked_refetch();
+          nativeBalance_refetch();
           getDepositInfo_refetch();
+          stakeTokenBalance_refetch();
         });
     },
-    [publicClient, getDepositInfo_refetch, totalStaked_refetch]
+    [
+      getDepositInfo_refetch,
+      nativeBalance_refetch,
+      publicClient,
+      stakeTokenBalance_refetch,
+      totalStaked_refetch,
+    ]
   );
   /**
    * * COPIED & MODIFIED FROM : StakingBox.jsx
@@ -301,7 +310,7 @@ function PortfolioPage() {
    */
 
   /**
-   * START - 553
+   * START - compoundRewardsTimer()
    */
   const { refetch: timeLeft_refetch } = useContractRead({
     address: CONTRACT_ADDRESS_FLEXIBLE_STAKING,
@@ -394,7 +403,7 @@ function PortfolioPage() {
     },
   });
   /**
-   * END - 553
+   * END - compoundRewardsTimer()
    */
 
   /**
