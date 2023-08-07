@@ -252,9 +252,9 @@ function StakingBox() {
           <p className="text-center font-medium mb-2 text-sm">
             {/* Total $DLANCE in Fluid Staking 476,852,255.89 */}
             Total $DLANCE in Fluid Staking{" "}
-            {isTotalStakedFetching
+            {/* {isTotalStakedFetching
               ? "Fetching..."
-              : Number(formatEther(totalStaked, "wei").toString()).toFixed(2)}
+              : Number(formatEther(totalStaked, "wei").toString()).toFixed(2)} */}
           </p>
           <p className="text-center font-bold text-sm xl:text-base">
             APY: {APY_FLUID_STAKING}%
