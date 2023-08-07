@@ -97,7 +97,7 @@ function PortfolioPage() {
       abi: FLEXIBLE_STAKING_ABI,
       functionName: "total_staked",
       chainId: chain?.id,
-      enabled: isConnected ? true : false,
+      // enabled: isConnected ? true : false,
       onSuccess(data) {
         console.log(data);
         console.log(`✅total_staked()`);
@@ -108,7 +108,7 @@ function PortfolioPage() {
       },
     });
   useEffect(() => {
-    if (!isConnected || !totalStaked_data) {
+    if (!totalStaked_data) {
       setTotalStaked("0");
       return;
     }
@@ -117,7 +117,7 @@ function PortfolioPage() {
     )}`;
     if (isNaN(t)) t = 0;
     setTotalStaked(t);
-  }, [isConnected, totalStaked_data]);
+  }, [totalStaked_data]);
   /**
    * END : "total_staked"
    * gets total DLANCE tokens [_staked, _rewards]
