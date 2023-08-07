@@ -16,10 +16,10 @@ export function ConnectButton() {
   const { chain } = getNetwork();
 
   const openWalletConnectModal = useCallback(() => {
-    setDefaultChain(mainnet);
+    // setDefaultChain(mainnet); //@todo - uncomment this for prod
     if (isOpen) return;
     open();
-  }, [isOpen, open, setDefaultChain]);
+  }, [isOpen, open]);
 
   const [currentChainIcon, setCurrentChainIcon] =
     useState(chainIconUnsupported);
@@ -73,3 +73,7 @@ export function ConnectButton() {
     </Button>
   );
 }
+
+/**
+ * @todo - there's a scenario where TOKENS_IN_WALLET > ALLOWANCE FOR STAKING, in which scenario it'll show as - you can stake coz allowance>0, but users won't be able to stake coz NOT_ENOUGH_ALLOWANCE
+ */
