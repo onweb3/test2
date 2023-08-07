@@ -25,7 +25,7 @@ import {
 
 const StatCard = ({ title, heading }) => {
   return (
-    <div className="bg-greyDark py-4 xl:py-6 px-6 rounded-xl">
+    <div className="bg-greyDark border-2 border-main-green-shade-30 py-4 xl:py-6 px-6 rounded-xl">
       <h4 className="text-sm xl:text-base font-semibold opacity-60 mb-3 xl:mb-4">
         {title}
       </h4>
@@ -472,12 +472,10 @@ function PortfolioPage() {
           />
         </div>
 
-        <div
-          className={`grid grid-cols-[auto_auto_auto] items-center space-x-5 sm:space-x-8 gap-8`}
-        >
+        <div className={`flex items-center space-x-2 sm:space-x-8`}>
           <div className={`text-[70%] sm:text-[80%] xl:text-[90%]`}>
             <Button
-              className={`min-w-[150px] ${
+              className={`min-w-[10em] w-[10em] ${
                 !isConnected || stakeRewards_status?.toUpperCase() === "LOADING"
                   ? "cursor-not-allowed grayscale"
                   : ""

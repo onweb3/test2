@@ -45,7 +45,7 @@
   /* bg-main-bg */
   html,
   body {
-    @apply bg-main-bg text-white overflow-x-hidden scroll-smooth;
+    @apply bg-main-bg text-white overflow-x-hidden scroll-smooth bg-[url("/images/bg.png")] bg-no-repeat bg-cover min-h-screen bg-center;
   }
 
   .container-wrapper {

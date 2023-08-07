@@ -198,8 +198,8 @@ function StakingBox() {
    */
 
   return (
-    <div className="bg-feature-card-border p-2 rounded-lg shadow-[0_0_1rem_rgba(0,0,0,1)]">
-      <div className="border-2 border-main-green-shade-40 rounded-xl pt-6 pb-10 bg-green-radial">
+    <div className="bg-feature-card-border p-2 rounded-lg shadow-[0_0_1rem_rgba(0,0,0,1)] ">
+      <div className="border-2 border-main-green-shade-40 rounded-xl pt-6 pb-10 bg-green-radial transition-all duration-300">
         <header className="px-4 sm:px-6 mb-7">
           <h1 className="text-center text-lg sm:text-xl xl:text-2xl mb-3 font-black">
             FLUID STAKING

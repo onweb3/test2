@@ -33,7 +33,10 @@ function Layout() {
       </div> */}
 
       {/* <main className="pt-navbar-height pl-sidebar-width"> */}
-      <main className="sm:pt-navbar-height">
+      <main className="sm:pt-navbar-height min-h-screen z-10 relative">
+        {/* bg-[rgb(35,35,35,.2)] */}
+        <div className="absolute top-0 left-0 w-full h-full -z-20 bg-[rgb(0,0,0,.6)]"></div>
+
         <Outlet />
       </main>
     </div>
