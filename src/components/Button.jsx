@@ -16,7 +16,7 @@ function Button({
       <Component
         {...props}
         className={twMerge(
-          `flex p-[0.125em] rounded-[3.75em] relative overflow-hidden z-10 group`,
+          `flex p-[0.125em] rounded-[3.75em] relative overflow-hidden z-10 group disabled:opacity-60`,
           className
         )}
       >

@@ -3,11 +3,13 @@ import Stake from "./Stake";
 import UnStake from "./UnStake";
 import { ConnectButton } from "./ConnectButton";
 import {
+  mainnet,
   useAccount,
   useBalance,
   useContractRead,
   useNetwork,
   usePublicClient,
+  useSwitchNetwork,
 } from "wagmi";
 import {
   BLOCK_SCANLINK,
@@ -24,11 +26,17 @@ import {
 import { toast } from "react-toastify";
 import { formatEther, formatUnits } from "viem";
 import { FaExternalLinkAlt } from "react-icons/fa";
+import Button from "./Button";
 
 function StakingBox() {
   const [tab, setTab] = useState("stake");
   const { address, isConnected } = useAccount();
   const { chain } = useNetwork();
+  const { switchNetwork, isLoading } = useSwitchNetwork({
+    chainId: mainnet.id,
+  });
+
+  const isOnCorrectChain = chain?.id === mainnet?.id;
 
   /**
    * START - get Deelance Balance
@@ -247,11 +255,11 @@ function StakingBox() {
     <div className="bg-feature-card-border p-2 rounded-lg shadow-[0_0_1rem_rgba(0,0,0,1)] ">
       <div className="border-2 border-main-green-shade-40 rounded-xl pt-6 pb-10 bg-green-radial transition-all duration-300">
         <header className="px-4 sm:px-6 mb-7">
-          <h1 className="text-center text-lg sm:text-xl xl:text-2xl  font-black">
+          <h1 className="text-center text-lg sm:text-xl xl:text-2xl mb-3 font-black">
             FLUID STAKING
           </h1>
-          {isConnected ? (
-            <p className="text-center font-medium mb-2 text-sm mt-3">
+          {isConnected && isOnCorrectChain ? (
+            <p className="text-center font-medium mb-2 text-sm">
               {/* Total $DLANCE in Fluid Staking 476,852,255.89 */}
               Total $DLANCE in Fluid Staking{" "}
               {isTotalStakedFetching
@@ -290,25 +298,39 @@ function StakingBox() {
         <main className="px-6 sm:px-10">
           {isConnected ? (
             <>
-              {tab === "stake" ? (
-                <Stake
-                  dlanceBal={stakeTokenBalance}
-                  flexibleAllowance={flexibleAllowance}
-                  handleTxWaiting={handleTxWaiting}
-                  userRewards={userRewards}
-                  userStakedTokens={userStakedTokens}
-                  getDepositInfo_refetch={getDepositInfo_refetch}
-                  depositInfo_isFetching={depositInfo_isFetching}
-                />
-              ) : null}
-              {tab === "unstake" ? (
-                <UnStake
-                  handleTxWaiting={handleTxWaiting}
-                  dlanceBal={stakeTokenBalance}
-                  userStakedTokens={userStakedTokens}
-                  getDepositInfo_refetch={getDepositInfo_refetch}
-                />
-              ) : null}
+              {isOnCorrectChain ? (
+                <>
+                  {tab === "stake" ? (
+                    <Stake
+                      dlanceBal={stakeTokenBalance}
+                      flexibleAllowance={flexibleAllowance}
+                      handleTxWaiting={handleTxWaiting}
+                      userRewards={userRewards}
+                      userStakedTokens={userStakedTokens}
+                      getDepositInfo_refetch={getDepositInfo_refetch}
+                      depositInfo_isFetching={depositInfo_isFetching}
+                    />
+                  ) : null}
+                  {tab === "unstake" ? (
+                    <UnStake
+                      handleTxWaiting={handleTxWaiting}
+                      dlanceBal={stakeTokenBalance}
+                      userStakedTokens={userStakedTokens}
+                      getDepositInfo_refetch={getDepositInfo_refetch}
+                    />
+                  ) : null}
+                </>
+              ) : (
+                <div className="text-[90%]">
+                  <Button
+                    className="w-full"
+                    onClick={() => switchNetwork(mainnet.id)}
+                    disabled={isLoading}
+                  >
+                    Switch Chain to ETH
+                  </Button>
+                </div>
+              )}
             </>
           ) : null}
 
