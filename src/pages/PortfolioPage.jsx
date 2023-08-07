@@ -1,4 +1,13 @@
+import {
+  CONTRACT_ADDRESS_FLEXIBLE_STAKING,
+  FLEXIBLE_STAKING_ABI,
+} from "FluidStakingContract";
+import { TOKEN_DECIMALS } from "GlobalValues";
 import Button from "components/Button";
+import { ConnectButton } from "components/ConnectButton";
+import { useEffect, useState } from "react";
+import { formatUnits } from "viem";
+import { useAccount, useContractRead, useNetwork } from "wagmi";
 
 const StatCard = ({ title, heading }) => {
   return (
@@ -55,68 +64,189 @@ const Wrapper = ({ children }) => {
 };
 
 function PortfolioPage() {
+  const { address, isConnected } = useAccount();
+  const { chain } = useNetwork();
+  /**
+   * START : "total_staked"
+   */
+  const [totalStaked, setTotalStaked] = useState("0");
+  const { data: totalStaked_data, refetch: totalStaked_refetch } =
+    useContractRead({
+      address: CONTRACT_ADDRESS_FLEXIBLE_STAKING,
+      abi: FLEXIBLE_STAKING_ABI,
+      functionName: "total_staked",
+      chainId: chain?.id,
+      enabled: isConnected ? true : false,
+      onSuccess(data) {
+        console.log(data);
+        console.log(`✅total_staked()`);
+      },
+      onError(err) {
+        console.error(err);
+        console.error(`❌caught - total_staked()`);
+      },
+    });
+  useEffect(() => {
+    if (!isConnected || !totalStaked_data) {
+      setTotalStaked("0");
+      return;
+    }
+    let t = `${Number(
+      Number(formatUnits(totalStaked_data, TOKEN_DECIMALS)).toFixed(6)
+    )}`;
+    if (isNaN(t)) t = 0;
+    setTotalStaked(t);
+  }, [isConnected, totalStaked_data]);
+  /**
+   * END : "total_staked"
+   * gets total DLANCE tokens [_staked, _rewards]
+   */
+  /**
+   * START : "getDepositInfo"
+   * gets total DLANCE tokens [_staked, _rewards]
+   */
+  const [userStakedTokens, setUserStakedTokens] = useState("0");
+  const [userRewards, setUserRewards] = useState("0");
+
+  const {
+    data: getDepositInfo_data,
+    isFetching: depositInfo_isFetching,
+    refetch: getDepositInfo_refetch,
+  } = useContractRead({
+    address: CONTRACT_ADDRESS_FLEXIBLE_STAKING,
+    abi: FLEXIBLE_STAKING_ABI,
+    functionName: "getDepositInfo",
+    chainId: chain?.id,
+    enabled: isConnected ? true : false,
+    args: [address],
+    onSuccess(data) {
+      console.log(data);
+      console.log(`✅getDepositInfo()`);
+    },
+  });
+  useEffect(() => {
+    if (!isConnected || !getDepositInfo_data) {
+      setUserRewards("0");
+      setUserStakedTokens("0");
+      return;
+    }
+    setUserStakedTokens(
+      `${Number(
+        Number(formatUnits(getDepositInfo_data[0], TOKEN_DECIMALS)).toFixed(6)
+      )}`
+    );
+    setUserRewards(
+      `${Number(
+        Number(formatUnits(getDepositInfo_data[1], TOKEN_DECIMALS)).toFixed(6)
+      )}`
+    );
+  }, [getDepositInfo_data, isConnected]);
+  /**
+   * END : "getDepositInfo"
+   * gets total DLANCE tokens [_staked, _rewards]
+   */
+
   return (
     <div className="py-8 lg:py-10 px-6 sm:px-8 lg:px-12 space-y-16 sm:space-y-10">
       <Wrapper>
         <h1 className="text-lg xl:text-xl font-bold mb-6">Analytics</h1>
 
         <div className="grid lg:grid-cols-3 gap-4 lg:gap-6 xl:gap-10 mb-8">
-          <StatCard title="Total Staked" heading="8000 DLANCE" />
-          <StatCard title="Total Rewards" heading="266.657 DLANCE" />
-          <StatCard title="Withdrawn till date" heading="266.657 DLANCE" />
+          <StatCard
+            title="Active Staked Tokens"
+            heading={`${Number(userStakedTokens).toLocaleString()} DLANCE`}
+          />
+          <StatCard
+            title="Active Rewards "
+            heading={`${Number(userRewards).toLocaleString()} DLANCE`}
+          />
+          <StatCard
+            title="Total Staked till date"
+            heading={`${Number(totalStaked).toLocaleString()} DLANCE`}
+          />
         </div>
 
-        <div className="flex flex-row items-center space-x-5 sm:space-x-8">
-          <div className="text-[70%] sm:text-[80%] xl:text-[90%]">
-            <Button>Stake Rewards</Button>
+        {/* {isConnected ? (
+          <div className="flex flex-row items-center space-x-5 sm:space-x-8">
+            <div className="text-[70%] sm:text-[80%] xl:text-[90%]">
+              <Button>Stake Rewards</Button>
+            </div>
+            <button className="underline text-xs sm:text-sm xl:text-base w-fit">
+              Withdraw Rewards
+            </button>
           </div>
-          <button className="underline text-xs sm:text-sm xl:text-base w-fit">
+        ) : (
+          <ConnectButton />
+        )} */}
+
+        <div
+          className={`grid grid-cols-[auto_auto_auto] items-center space-x-5 sm:space-x-8 gap-8`}
+        >
+          <div className={`text-[70%] sm:text-[80%] xl:text-[90%]`}>
+            <Button
+              className={`${
+                !isConnected ? "cursor-not-allowed grayscale" : ""
+              }`}
+            >
+              Stake Rewards
+            </Button>
+          </div>
+          <button
+            className={`underline text-xs sm:text-sm xl:text-base w-fit ${
+              !isConnected ? "cursor-not-allowed grayscale" : ""
+            }`}
+          >
             Withdraw Rewards
           </button>
         </div>
       </Wrapper>
 
-      <Wrapper>
-        <h1 className="text-lg xl:text-xl font-bold mb-6">My Assets</h1>
+      {isConnected && (
+        <Wrapper>
+          <h1 className="text-lg xl:text-xl font-bold mb-6">My Assets</h1>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-[30rem] sm:min-w-full w-full bg-main-green-shade-20 rounded-2xl overflow-hidden">
-            <thead className="h-14 bg-greyDark">
-              <tr className="[&>*:first-child]:pl-8 [&>*:last-child]:pr-8 text-sm xl:text-base">
-                <th className="text-left">Token</th>
-                <th>Balance</th>
-                <th>Price</th>
-                <th>Value</th>
-              </tr>
-            </thead>
-            <tbody className="[&>*:nth-child(even)]:bg-main-green-shade-20">
-              <Row
-                img="/images/tokens/dee-black.svg"
-                tokenName="DLANCE"
-                balance="<0.01"
-                price="$1,845.23"
-                value="$5.64"
-              />
+          <div className="overflow-x-auto">
+            <table className="min-w-[30rem] sm:min-w-full w-full bg-main-green-shade-20 rounded-2xl overflow-hidden">
+              <thead className="h-14 bg-greyDark">
+                <tr className="[&>*:first-child]:pl-8 [&>*:last-child]:pr-8 text-sm xl:text-base">
+                  <th className="text-left">Token</th>
+                  <th>Balance</th>
+                  <th>Price</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody className="[&>*:nth-child(even)]:bg-main-green-shade-20">
+                <Row
+                  img="/images/tokens/dee-black.svg"
+                  tokenName="DLANCE"
+                  balance="<0.01"
+                  price="$1,845.23"
+                  value="$5.64"
+                />
 
-              <Row
-                img="/images/tokens/eth-circle.svg"
-                tokenName="ETH"
-                balance="<0.01"
-                price="$1,845.23"
-                value="$5.64"
-              />
+                <Row
+                  img="/images/tokens/eth-circle.svg"
+                  tokenName="ETH"
+                  balance="<0.01"
+                  price="$1,845.23"
+                  value="$5.64"
+                />
 
-              <Row
-                img="/images/tokens/usdt-circle.svg"
-                tokenName="ETH"
-                balance="<0.01"
-                price="$1,845.23"
-                value="$5.64"
-              />
-            </tbody>
-          </table>
-        </div>
-      </Wrapper>
+                <Row
+                  img="/images/tokens/usdt-circle.svg"
+                  tokenName="ETH"
+                  balance="<0.01"
+                  price="$1,845.23"
+                  value="$5.64"
+                />
+              </tbody>
+            </table>
+          </div>
+        </Wrapper>
+      )}
+      <div className="flex md:w-1/3 md:ml-auto">
+        <ConnectButton />
+      </div>
     </div>
   );
 }

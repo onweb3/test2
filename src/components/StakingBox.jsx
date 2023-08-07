@@ -87,6 +87,10 @@ function StakingBox() {
       )}`
     );
   }, [getDepositInfo_data, isConnected]);
+  /**
+   * END : "getDepositInfo"
+   * gets total DLANCE tokens [_staked, _rewards]
+   */
 
   /**
    * START : generic tx toasts
