@@ -43,6 +43,10 @@ function Navbar() {
       </div>
 
       <Button
+        as="a"
+        href="https://app.uniswap.org/#/swap?inputCurrency=0x7D60dE2E7D92Cb5C863bC82f8d59b37C59fC0A7A&outputCurrency=ETH"
+        target="_blank"
+        rel="noreferrer"
         colorClassName="bg-black"
         className="text-[64%] lg:text-[70%] xl:text-[86%] cursor-pointer"
       >

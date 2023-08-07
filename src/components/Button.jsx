@@ -1,5 +1,4 @@
 import { twMerge } from "tailwind-merge";
-import pxToEm from "utils/pxToEm";
 
 function Button({
   variant = 0,
