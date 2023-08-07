@@ -254,7 +254,7 @@ function StakingBox() {
             Total $DLANCE in Fluid Staking{" "}
             {isTotalStakedFetching
               ? "Fetching..."
-              : Number(formatEther(totalStaked, "wei")).toFixed(2)}
+              : Number(formatEther(totalStaked, "wei").toString()).toFixed(2)}
           </p>
           <p className="text-center font-bold text-sm xl:text-base">
             APY: {APY_FLUID_STAKING}%
