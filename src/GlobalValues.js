@@ -1,4 +1,4 @@
-export const isTestnet = true;
+export const isTestnet = !true;
 console.log(`isTestnet : ${isTestnet ? "✅YES" : "❌NO"}`);
 export const TOKEN_SYMBOL = isTestnet ? "IBAT" : "DLANCE"; // Token Symbol
 export const TOKEN_DECIMALS = isTestnet ? "9" : "18"; // Token Decimals
