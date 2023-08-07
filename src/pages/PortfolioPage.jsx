@@ -2,12 +2,17 @@ import {
   CONTRACT_ADDRESS_FLEXIBLE_STAKING,
   FLEXIBLE_STAKING_ABI,
 } from "FluidStakingContract";
-import { TOKEN_DECIMALS } from "GlobalValues";
+import {
+  TOKEN_CONTRACT_ADDRESS_ETH as TOKEN_CONTRACT_ADDRESS,
+  TOKEN_DECIMALS,
+  TOKEN_SYMBOL,
+  USDT_CONTRACT_ADDRESS,
+} from "GlobalValues";
 import Button from "components/Button";
 import { ConnectButton } from "components/ConnectButton";
 import { useEffect, useState } from "react";
 import { formatUnits } from "viem";
-import { useAccount, useContractRead, useNetwork } from "wagmi";
+import { useAccount, useBalance, useContractRead, useNetwork } from "wagmi";
 
 const StatCard = ({ title, heading }) => {
   return (
@@ -22,7 +27,14 @@ const StatCard = ({ title, heading }) => {
   );
 };
 
-const Row = ({ img, tokenName, balance, price, value }) => {
+const Row = ({
+  img,
+  tokenName,
+  balance,
+  price,
+  value,
+  type = "Native Token",
+}) => {
   return (
     <tr className="[&>*:first-child]:pl-8 [&>*:last-child]:pr-8">
       <td className="py-3 md:py-2">
@@ -38,7 +50,7 @@ const Row = ({ img, tokenName, balance, price, value }) => {
           </div>
           <div>
             <h1 className="text-sm mb-1.5 lh-1">{tokenName}</h1>
-            <p className="text-xs opacity-80">Native Token</p>
+            <p className="text-xs opacity-80">{type}</p>
           </div>
         </div>
       </td>
@@ -146,6 +158,54 @@ function PortfolioPage() {
    * gets total DLANCE tokens [_staked, _rewards]
    */
 
+  /**
+   * START - get Deelance Balance
+   */
+  const { data: stakeTokenBalance } = useBalance({
+    address,
+    enabled: address ? true : false,
+    token: TOKEN_CONTRACT_ADDRESS,
+    chainId: chain?.id,
+    onError(err) {
+      console.error(err);
+      console.error(`❌ Dlance balance`);
+    },
+  });
+  /**
+   * END - get Deelance Balance
+   */
+  /**
+   * START - get Native Balance
+   */
+  const { data: nativeBalance } = useBalance({
+    address,
+    enabled: address ? true : false,
+    chainId: chain?.id,
+    onError(err) {
+      console.error(err);
+      console.error(`❌ native balance`);
+    },
+  });
+  /**
+   * END - get Native Balance
+   */
+  /**
+   * START - get USDT-ETH Balance
+   */
+  const { data: usdtBalance } = useBalance({
+    address,
+    enabled: address ? true : false,
+    token: USDT_CONTRACT_ADDRESS,
+    chainId: chain?.id,
+    onError(err) {
+      console.error(err);
+      console.error(`❌ usdt-eth balance`);
+    },
+  });
+  /**
+   * END - get USDT-ETH Balance
+   */
+
   return (
     <div className="py-8 lg:py-10 px-6 sm:px-8 lg:px-12 space-y-16 sm:space-y-10">
       <Wrapper>
@@ -165,19 +225,6 @@ function PortfolioPage() {
             heading={`${Number(totalStaked).toLocaleString()} DLANCE`}
           />
         </div>
-
-        {/* {isConnected ? (
-          <div className="flex flex-row items-center space-x-5 sm:space-x-8">
-            <div className="text-[70%] sm:text-[80%] xl:text-[90%]">
-              <Button>Stake Rewards</Button>
-            </div>
-            <button className="underline text-xs sm:text-sm xl:text-base w-fit">
-              Withdraw Rewards
-            </button>
-          </div>
-        ) : (
-          <ConnectButton />
-        )} */}
 
         <div
           className={`grid grid-cols-[auto_auto_auto] items-center space-x-5 sm:space-x-8 gap-8`}
@@ -218,26 +265,34 @@ function PortfolioPage() {
               <tbody className="[&>*:nth-child(even)]:bg-main-green-shade-20">
                 <Row
                   img="/images/tokens/dee-black.svg"
-                  tokenName="DLANCE"
-                  balance="<0.01"
+                  tokenName={`DLANCE`}
+                  balance={`${Number(
+                    stakeTokenBalance?.formatted
+                  ).toLocaleString()}`}
                   price="$1,845.23"
                   value="$5.64"
+                  type="Staking Token"
                 />
 
                 <Row
                   img="/images/tokens/eth-circle.svg"
-                  tokenName="ETH"
-                  balance="<0.01"
+                  tokenName={`${nativeBalance?.symbol.toUpperCase()}`}
+                  balance={`${Number(
+                    Number(nativeBalance?.formatted).toFixed(6)
+                  ).toLocaleString()}`}
                   price="$1,845.23"
                   value="$5.64"
                 />
 
                 <Row
                   img="/images/tokens/usdt-circle.svg"
-                  tokenName="ETH"
-                  balance="<0.01"
+                  tokenName={`${usdtBalance?.symbol.toUpperCase()}`}
+                  balance={`${Number(
+                    Number(usdtBalance?.formatted).toFixed(6)
+                  ).toLocaleString()}`}
                   price="$1,845.23"
                   value="$5.64"
+                  type={`${chain?.network.toUpperCase()}-Stablecoin`}
                 />
               </tbody>
             </table>
