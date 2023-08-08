@@ -8,13 +8,13 @@ function Navbar() {
     <nav
       className={`grid grid-cols-[auto_auto] sm:grid-cols-[auto_1fr_auto] items-center gap-6 px-6 sm:px-10 bg-[rgba(21,21,21,1)] py-5 sm:py-0 sm:h-navbar-height justify-between z-[200] justify-items-end`}
     >
-      <Link to="/">
+      <a href="https://deelance.com" target="_blank" rel="noreferrer">
         <img
           src="/images/logo.svg"
           className="h-6 sm:h-7 xl:h-9 relative bottom-1 lg:mr-12 xl:mr-16"
           alt="deelance.com deelance"
         />
-      </Link>
+      </a>
 
       {/* <div className="hidden sm:block"></div> */}
 
