@@ -13,7 +13,9 @@ import {
 } from "wagmi";
 import {
   BLOCK_SCANLINK,
+  DLANCE_ABI_PRICEUSD,
   DLANCE_ABI_allowance,
+  DLANCE_TOKEN_PRICEUSD_CONTRACT,
   TOKEN_CONTRACT_ADDRESS_ETH as TOKEN_CONTRACT_ADDRESS,
   TOKEN_CONTRACT_ADDRESS_ETH,
   TOKEN_DECIMALS,
@@ -37,6 +39,25 @@ function StakingBox() {
   });
 
   const isOnCorrectChain = chain?.id === mainnet?.id;
+
+  const { data: tokenCurrentPrice, isLoading: isTokenCurrentPriceFetching } =
+    useContractRead({
+      address: DLANCE_TOKEN_PRICEUSD_CONTRACT,
+      abi: DLANCE_ABI_PRICEUSD,
+      functionName: "getAmountsOut",
+      chainId: 1,
+      args: [
+        "1000000000000000000", //1 DLANCE in wei
+        [
+          `0x7D60dE2E7D92Cb5C863bC82f8d59b37C59fC0A7A`,
+          `0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2`,
+          `0xdAC17F958D2ee523a2206206994597C13D831ec7`,
+        ],
+      ],
+    });
+
+  // console.log('Number(formatUnits(tokenCurrentPrice[2], "6"))');
+  // console.log(Number(formatUnits(tokenCurrentPrice[2], "6")));
 
   /**
    * START - get Deelance Balance
@@ -88,8 +109,7 @@ function StakingBox() {
       abi: FLEXIBLE_STAKING_ABI,
       functionName: "total_staked",
       chainId: chain?.id,
-      enabled: address ? true : false,
-      watch: true,
+      // enabled: address ? true : false,
     });
 
   useEffect(() => {
@@ -258,16 +278,40 @@ function StakingBox() {
           <h1 className="text-center text-lg sm:text-xl xl:text-2xl mb-3 font-black">
             FLUID STAKING
           </h1>
-          {isConnected && isOnCorrectChain ? (
-            <p className="text-center font-medium mb-2 text-sm">
-              {/* Total $DLANCE in Fluid Staking 476,852,255.89 */}
-              Total $DLANCE in Fluid Staking{" "}
+          {/* {isConnected && isOnCorrectChain ? ( */}
+          <p className="text-center font-medium mb-2 text-sm">
+            {/* Total $DLANCE in Fluid Staking 476,852,255.89 */}
+            Total in Fluid Staking{" "}
+          </p>
+
+          <p className="text-center mb-4">
+            {" "}
+            <span className="text-main-green font-semibold">
               {isTotalStakedFetching
                 ? "Fetching..."
-                : Number(formatEther(totalStaked, "wei").toString()).toFixed(2)}
-            </p>
-          ) : null}
-          <p className="text-center font-bold text-sm xl:text-base">
+                : Number(
+                    Number(formatEther(totalStaked, "wei").toString()).toFixed(
+                      2
+                    )
+                  ).toLocaleString()}{" "}
+              DLANCE
+            </span>{" "}
+            <span className="opacity-80 text-sm">
+              ( $
+              {isTotalStakedFetching || isTokenCurrentPriceFetching
+                ? "Fetching..."
+                : Number(
+                    (
+                      Number(formatEther(totalStaked, "wei")) *
+                      Number(formatUnits(tokenCurrentPrice[2], "6"))
+                    )?.toFixed(0)
+                  ).toLocaleString()}{" "}
+              USD )
+            </span>
+          </p>
+
+          {/* ) : null} */}
+          <p className="text-center font-bold text-base xl:text-lg">
             APY: {APY_FLUID_STAKING}%
           </p>
         </header>

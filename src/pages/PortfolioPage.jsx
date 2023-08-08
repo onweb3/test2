@@ -17,7 +17,7 @@ import { ConnectButton } from "components/ConnectButton";
 import { useCallback, useEffect, useState } from "react";
 import { TbProgress } from "react-icons/tb";
 import { toast } from "react-toastify";
-import { formatUnits, parseUnits } from "viem";
+import { formatUnits } from "viem";
 import {
   useAccount,
   useBalance,
@@ -27,7 +27,7 @@ import {
   usePublicClient,
 } from "wagmi";
 
-const StatCard = ({ title, heading }) => {
+const StatCard = ({ title, heading, subtitle }) => {
   return (
     <div className="bg-greyDark border-2 border-main-green-shade-30 py-4 xl:py-6 px-6 rounded-xl">
       <h4 className="text-sm xl:text-base font-semibold opacity-60 mb-3 xl:mb-4">
@@ -36,12 +36,15 @@ const StatCard = ({ title, heading }) => {
       <h1 className="font-bold text-base sm:text-lg xl:text-2xl text-main-green">
         {heading}
       </h1>
+
+      {subtitle ? <p className="opacity-80 mt-2">{subtitle}</p> : null}
     </div>
   );
 };
 
 const Row = ({ img, tokenName, balance, price, type = "Native Token" }) => {
   const [value, setValue] = useState("0");
+
   useEffect(() => {
     const p = Number(price);
     const bal = Number(balance);
@@ -49,6 +52,7 @@ const Row = ({ img, tokenName, balance, price, type = "Native Token" }) => {
     isNaN(v) ? (v = "0") : (v += "");
     setValue(v);
   }, [setValue, price, balance]);
+
   return (
     <tr className="[&>*:first-child]:pl-8 [&>*:last-child]:pr-8">
       <td className="py-3 md:py-2">
@@ -103,22 +107,25 @@ function PortfolioPage() {
    * START : "total_staked"
    */
   const [totalStaked, setTotalStaked] = useState("0");
-  const { data: totalStaked_data, refetch: totalStaked_refetch } =
-    useContractRead({
-      address: CONTRACT_ADDRESS_FLEXIBLE_STAKING,
-      abi: FLEXIBLE_STAKING_ABI,
-      functionName: "total_staked",
-      chainId: chain?.id,
-      // enabled: isConnected ? true : false,
-      onSuccess(data) {
-        console.log(data);
-        console.log(`✅total_staked()`);
-      },
-      onError(err) {
-        console.error(err);
-        console.error(`❌caught - total_staked()`);
-      },
-    });
+  const {
+    data: totalStaked_data,
+    refetch: totalStaked_refetch,
+    isLoading: isTotalStakedFetching,
+  } = useContractRead({
+    address: CONTRACT_ADDRESS_FLEXIBLE_STAKING,
+    abi: FLEXIBLE_STAKING_ABI,
+    functionName: "total_staked",
+    chainId: chain?.id,
+    // enabled: isConnected ? true : false,
+    onSuccess(data) {
+      console.log(data);
+      console.log(`✅total_staked()`);
+    },
+    onError(err) {
+      console.error(err);
+      console.error(`❌caught - total_staked()`);
+    },
+  });
   useEffect(() => {
     if (!totalStaked_data) {
       setTotalStaked("0");
@@ -186,6 +193,7 @@ function PortfolioPage() {
         console.error(`❌ Dlance balance`);
       },
     });
+
   /**
    * END - get Deelance Balance
    */
@@ -247,10 +255,14 @@ function PortfolioPage() {
    * START - get DLANCE price
    */
   const [stakingTokenPrice, setStakingToken] = useState("0");
-  const { refetch: stakingTokenPrice_refetch } = useContractRead({
+  const {
+    refetch: stakingTokenPrice_refetch,
+    data: tokenCurrentPrice,
+    isLoading: isTokenCurrentPriceFetching,
+  } = useContractRead({
     address: DLANCE_TOKEN_PRICEUSD_CONTRACT,
     abi: DLANCE_ABI_PRICEUSD,
-    enabled: address ? true : false,
+    // enabled: address ? true : false,
     functionName: "getAmountsOut",
     chainId: 1,
     args: [
@@ -272,6 +284,10 @@ function PortfolioPage() {
       console.error(`❌caught - getAmountsOut()`);
     },
   });
+
+  // console.log("data");
+  // console.log(4352 * Number(formatUnits(data[2], "6")));
+
   /**
    * END - get DLANCE Balance
    */
@@ -540,6 +556,22 @@ function PortfolioPage() {
           <StatCard
             title="Globally Staked till date"
             heading={`${Number(totalStaked).toLocaleString()} DLANCE`}
+            subtitle={
+              <>
+                <span className="opacity-80 text-sm">
+                  ( $
+                  {isTotalStakedFetching || isTokenCurrentPriceFetching
+                    ? "Fetching..."
+                    : Number(
+                        (
+                          Number(totalStaked) *
+                          Number(formatUnits(tokenCurrentPrice[2], "6"))
+                        )?.toFixed(0)
+                      ).toLocaleString()}{" "}
+                  USD )
+                </span>
+              </>
+            }
           />
         </div>
 
