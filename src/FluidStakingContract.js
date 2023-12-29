@@ -5,7 +5,7 @@ export const CONTRACT_ADDRESS_FLEXIBLE_STAKING = isTestnet
   : "0xD8c43d1A88DC1b98D0C99F42FEe577aDfBD82940";
 // https://etherscan.io/address/0xd8c43d1a88dc1b98d0c99f42fee577adfbd82940#code
 
-export const APY_FLUID_STAKING = "15";
+export const APY_FLUID_STAKING = "30";
 export const MIN_STAKE_AMOUNT = isTestnet ? 8000 : 800;
 export const FLEXIBLE_STAKING_ABI = isTestnet
   ? [
