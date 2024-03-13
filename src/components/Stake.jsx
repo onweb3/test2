@@ -58,9 +58,6 @@ function Stake({
         CONTRACT_ADDRESS_FLEXIBLE_STAKING,
         "10000000000000000000000000000",
       ],
-      onError(error) {
-        console.error("Error in enableStaking:", error);
-      },
       onSuccess(data) {
         console.log(data);
         console.log(`✅ tx sent : "approve"\n${data.hash}`);
@@ -68,11 +65,10 @@ function Stake({
       },
     });
   const approveAllowance = useCallback(() => {
-    // if (!chain) {
-    //   console.log("Chain not defined or falsy");
-    //   return;
-    // }
-   // console.log("Chain value:", chain);
+    if (!chain) {
+      console.log("Chain not defined or falsy");
+      return;
+    }
 
     enableStaking();
   }, [enableStaking, chain]);
@@ -374,7 +370,7 @@ function Stake({
                   onClick={() => 
                    { console.log("Button clicked")
                     approveAllowance()}}
-                //  disabled={enableStaking_isLoading}
+                 disabled={enableStaking_isLoading}
                 >
                   ADD ALLOWANCE ({stakeAmount} $DLANCE)
                 </Button>
