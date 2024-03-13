@@ -1,4 +1,4 @@
-function StakeInputBox({ value, setValue, maxBalToSet }) {
+function StakeInputBox({ value, setValue, maxBalToSet, disabled }) {
   /**
    * START - handleInputAmount
    *
@@ -53,6 +53,7 @@ function StakeInputBox({ value, setValue, maxBalToSet }) {
           placeholder="0"
           onChange={(e) => handleInputAmount(e?.target?.value, setValue)}
           value={value}
+          disabled={disabled}
         />
       </div>
       {/*  */}

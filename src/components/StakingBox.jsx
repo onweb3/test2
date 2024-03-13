@@ -272,15 +272,31 @@ function StakingBox() {
    */
 
   return (
-    <div className="bg-feature-card-border p-2 rounded-lg shadow-[0_0_1rem_rgba(0,0,0,1)] ">
+    <>
+    {!isConnected && (
+    <div className=" absolute bg-feature-card-border w-[480px] h-[480px] border-2 border-main-green-shade-40 rounded-xl pt-6 pb-10  transition-all duration-300  z-50 flex justify-center backdrop-blur-sm bg-opacity-60 bg-black">
+    <div className="text-[80%] w-[50%] flex xl:text-[110%] mt-[180px]">
+            <ConnectButton />
+          </div>
+    </div>
+    )}
+    <div className={`bg-feature-card-border p-2 rounded-lg shadow-[0_0_1rem_rgba(0,0,0,1)]`}>
       <div className="border-2 border-main-green-shade-40 rounded-xl pt-6 pb-10 bg-green-radial transition-all duration-300">
-        <header className="px-4 sm:px-6 mb-7">
+        <header className="px-4 sm:px-6 mb-5">
+        {isConnected ? (
+            <>
           <h1 className="text-center text-lg sm:text-xl xl:text-2xl mb-3 font-black">
-            FLUID STAKING
+           Deposit
           </h1>
+          </>
+        ) :     <h1 className="text-center text-lg sm:text-xl xl:text-2xl mb-3 font-black">
+        Deposit
+      </h1>}
+
           {/* {isConnected && isOnCorrectChain ? ( */}
+          {/* {!isConnected && (
+            <>
           <p className="text-center font-medium mb-2 text-sm">
-            {/* Total $DLANCE in Fluid Staking 476,852,255.89 */}
             Total in Fluid Staking{" "}
           </p>
 
@@ -309,14 +325,28 @@ function StakingBox() {
               USD )
             </span>
           </p>
+          </>
+          )} */}
+
+       
 
           {/* ) : null} */}
+          {/* {!isConnected && (
           <p className="text-center font-bold text-base xl:text-lg">
             APY: {APY_FLUID_STAKING}%
           </p>
+          )} */}
+
+          {/* <p className="text-center font-bold text-base xl:text-lg">
+          Total Deposited Deelance
+          </p> */}
+
         </header>
 
+        {/* {isConnected ? (
+            <>
         <div className="mx-auto rounded-full border-1 border-main-green p-1 mb-8 w-[90%] sm:w-[60%] grid grid-cols-2">
+         
           <button
             onClick={() => setTab("stake")}
             className={`text-xs sm:text-sm rounded-full py-1 transition-all duration-200 ${
@@ -338,12 +368,13 @@ function StakingBox() {
             Withdraw
           </button>
         </div>
+        </>
+        ) : null} */}
 
         <main className="px-6 sm:px-10">
-          {isConnected ? (
-            <>
-              {isOnCorrectChain ? (
-                <>
+         
+              {/* {!isOnCorrectChain ? (
+                <> */}
                   {tab === "stake" ? (
                     <Stake
                       dlanceBal={stakeTokenBalance}
@@ -363,7 +394,7 @@ function StakingBox() {
                       getDepositInfo_refetch={getDepositInfo_refetch}
                     />
                   ) : null}
-                </>
+                {/* </>
               ) : (
                 <div className="text-[90%]">
                   <Button
@@ -374,14 +405,19 @@ function StakingBox() {
                     Switch Chain to ETH
                   </Button>
                 </div>
-              )}
-            </>
-          ) : null}
+              )} */}
+           
 
           <div className="text-[80%] xl:text-[90%] mt-8">
             <ConnectButton />
+            {/* {isConnected ? (
+            <>
+            <Button className="w-full mt-3">Deposit</Button>
+            </> 
+               ) : null} */}
           </div>
-
+         
+         {/* {!isConnected && (
           <a
             href="https://deelance.com/en/academy/tutorials/4R5NryDvOmK9yVJCw6syGr"
             target="_blank"
@@ -391,9 +427,11 @@ function StakingBox() {
             How to Stake{" "}
             <FaExternalLinkAlt className="inline-block align-middle" />{" "}
           </a>
+          )} */}
         </main>
       </div>
     </div>
+    </>
   );
 }
 

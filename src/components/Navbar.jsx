@@ -18,7 +18,7 @@ function Navbar() {
 
       {/* <div className="hidden sm:block"></div> */}
 
-      <div
+      {/* <div
         className={`row-start-2 sm:row-start-auto col-span-2 sm:col-span-1 flex space-x-4 text-[67%] sm:text-[80%] xl:text-[100%] w-full sm:w-auto`}
       >
         <Button
@@ -40,7 +40,7 @@ function Navbar() {
           <BiWallet className="text-[1.4em]" />
           <span className="whitespace-nowrap">My Portfolio</span>
         </Button>
-      </div>
+      </div> */}
 
       <Button
         as="a"

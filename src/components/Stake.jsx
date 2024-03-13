@@ -45,6 +45,7 @@ function Stake({
 
   const { isConnected, address: userAddress } = useAccount();
   const { chain } = useNetwork();
+  //console.log(chain);
   /**
    * START - enable staking - allowance
    */
@@ -57,6 +58,9 @@ function Stake({
         CONTRACT_ADDRESS_FLEXIBLE_STAKING,
         "10000000000000000000000000000",
       ],
+      onError(error) {
+        console.error("Error in enableStaking:", error);
+      },
       onSuccess(data) {
         console.log(data);
         console.log(`✅ tx sent : "approve"\n${data.hash}`);
@@ -64,7 +68,12 @@ function Stake({
       },
     });
   const approveAllowance = useCallback(() => {
-    if (!chain) return;
+    // if (!chain) {
+    //   console.log("Chain not defined or falsy");
+    //   return;
+    // }
+   // console.log("Chain value:", chain);
+
     enableStaking();
   }, [enableStaking, chain]);
 
@@ -304,45 +313,83 @@ function Stake({
 
   return (
     <div>
+      <div className="mb-3">
+      <div className="text-center font-bold text-base xl:text-lg items-center w-full">
+            <p>Total Deposited</p>
+            </div>
+       
+          {isConnected ? (
+          <p className="text-center font-bold text-base xl:text-lg">
+          Your deposited: {formattedTokenBal} DLANCE
+          </p>
+          ) :  <p className="text-center font-bold text-base xl:text-lg">
+          Your deposited: 0 DLANCE
+          </p>}
+         
+      </div>
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs sm:text-sm opacity-80">Amount</p>
-        <p className="text-xs sm:text-sm opacity-80">
-          My Balance: {formattedTokenBal} DLANCE
-        </p>
       </div>
       <div>
+   
+      </div>
+      {isConnected ? (
+        <div>
         <StakeInputBox
           setValue={setStakeAmount}
           value={stakeAmount}
           maxBalToSet={dlanceBal?.formatted}
         />
-        <p className="text-xs mt-3 font-light">
-          Min Stake Amount: {MIN_STAKE_AMOUNT} DLANCE
-        </p>
       </div>
+      ) :   <div>
+      <StakeInputBox
+        setValue={setStakeAmount}
+        value={stakeAmount}
+        maxBalToSet={dlanceBal?.formatted}
+        disabled={true}
+      />
+    </div>}
+      
 
-      {isConnected ? (
-        <>
+      {/* {isConnected ? (
+        <> */}
           <div className="text-[80%] xl:text-[90%] mt-6 mb-10">
             {Number(flexibleAllowance) < MIN_STAKE_AMOUNT ||
             Number(flexibleAllowance) < Number(stakeAmount) ? (
               <div>
+                  {stakeAmount === "" && (
                 <Button
                   variant={0}
                   className="w-full"
                   onClick={() => approveAllowance()}
                   disabled={enableStaking_isLoading}
                 >
-                  ADD ALLOWANCE
+                  ADD ALLOWANCE 
                 </Button>
-                <div className="flex justify-between">
+                )}
+                {stakeAmount > 0 && (
+                <Button
+                  variant={0}
+                  className="w-full"
+                  onClick={() => 
+                   { console.log("Button clicked")
+                    approveAllowance()}}
+                //  disabled={enableStaking_isLoading}
+                >
+                  ADD ALLOWANCE ({stakeAmount} $DLANCE)
+                </Button>
+                )}
+
+              <Button className="w-full mt-3">Deposit</Button>
+
+                {/* <div className="flex justify-between">
                   <p className="text-xs mt-3 font-light text-right">
                     Min allowance required: {MIN_STAKE_AMOUNT} {TOKEN_SYMBOL}
                   </p>
                   <p className="text-xs mt-3 font-light">
                     Allowance left: {Number(flexibleAllowance).toLocaleString()}
                   </p>
-                </div>
+                </div> */}
               </div>
             ) : (
               <Button
@@ -371,7 +418,7 @@ function Stake({
             )}
           </div>
 
-          <div>
+          {/* <div>
             <button className="w-fit flex items-center space-x-2 mx-auto mb-6">
               <span>My Rewards</span>
               <TbReload
@@ -442,9 +489,9 @@ function Stake({
                 `Withdraw Rewards`
               )}
             </button>
-          </div>
-        </>
-      ) : null}
+          </div> */}
+        {/* </>
+       ) : null} */}
     </div>
   );
 }
